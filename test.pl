@@ -61,16 +61,17 @@ if($V=~/^\d\.\d{2}/){
 }else{
   print"Version function ....... not ok 7\n";
 }
-my $PO=$Q2->_Print_Object;
-if(defined $PO){
-  print"Print_Object ........... ok 8\n";
-}else{
-  print"Print_Object ........... not ok 8\n";
-}
 my $Q3=Games::QuizTaker->new(FileName=>"sample.csv",Delimiter=>",",Answer_Delimiter=>"x");
 my $del=$Q3->_get_Answer_Delimiter;
 if($del eq "x"){
-  print"Answer_Delimiter init .. ok 9\n";
+  print"Answer_Delimiter init .. ok 8\n";
 }else{
-  print"Answer_Delimiter init .. not ok 9\n";
+  print"Answer_Delimiter init .. not ok 8\n";
 }
+my $Max=$Q3->_get_Max_Questions;
+if($Max == 0){
+  print"Max_Questions init ..... ok 9\n";
+}else{
+  print"Max_Questions init ..... not ok\n";
+}
+

@@ -37,3 +37,10 @@ Revision history for Perl extension Games::QuizTaker.
 	  than 1 in the generate function. If it is, the module will
 	  croak.
 
+1.06  Fri Dec 14 15:45:03 2001
+	- Added a _set and _get function for the number of max questions
+	  in the generate and test functions. The object will now store
+	  the max number within itself in the _Max_Questions parameter.
+
+	- Modified the POD to correspond with the above change
+

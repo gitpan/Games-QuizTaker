@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.05;
+$VERSION=1.06;
 
 sub AUTOLOAD{
   my $self=shift;
@@ -23,6 +23,7 @@ sub new{
 	   _Answer_Delimiter => $arg{Answer_Delimiter}|| " ", 
            _FileLength       => "0",
            _FileName         => $arg{FileName}||croak"No FileName given",
+	   _Max_Questions    => "0",
          },$class;
 }
   
@@ -74,12 +75,13 @@ sub generate{
 
   if(!defined $Max_Questions){
     $Max_Questions=$Total_Questions;
-  }
-  if($Max_Questions > $Total_Questions){
+    &_set_Max_Questions($self,$Max_Questions);
+  }elsif($Max_Questions > $Total_Questions){
     croak"Number of questions exceeds the amount in $FileName";
-  }
-  if($Max_Questions < 1){
+  }elsif($Max_Questions < 1){
     croak"Must have at least one question in the test";
+  }else{
+    &_set_Max_Questions($self,$Max_Questions);
   }
   
   my %Randoms=();
@@ -116,13 +118,8 @@ sub test{
   my $Answers=shift;
   my $Lengths=shift;
   my $Randoms=shift;
-  my $Max=shift;
   my $Answer_Sep=_get_Answer_Delimiter($self);
-
-  if(!defined $Max){
-    $Max=&_get_FileLength($self);
-  }
-
+  my $Max=_get_Max_Questions($self);
   my($length,$answer,$key,$X);
   my $question_number=1;
   my $question_answer;
@@ -210,9 +207,20 @@ sub _set_FileLength{
   $$self{_FileLength}=$count;
 }
 
+sub _set_Max_Questions{
+  my $self=shift;
+  my $Questions=shift;
+  $$self{_Max_Questions}=$Questions;
+}
+
 sub _get_FileLength{
   my $self=shift;
   return $$self{_FileLength};
+}
+
+sub _get_Max_Questions{
+  my $self=shift;
+  return $$self{_Max_Questions};
 }
 
 sub _get_FileName{
@@ -312,11 +320,13 @@ further after its generation by the internal _shuffle function which is a
 Fisher-Yates shuffle. If the maximum number of questions you wish to answer
 on the quiz ($Max) is not passed to the function, it will default to the
 maximum number of questions in the file (determined by the FileLength
-parameter within the object.
+parameter within the object. It will also set the Max_Questions parameter
+within the object, which will be later used by the test function to keep
+track of the number of questions printed out.
 
 =item test
 
-C<< $QT->test($refHash1,$refHash2,$refHash3,$refArray1,$Max); >>
+C<< $QT->test($refHash1,$refHash2,$refHash3,$refArray1); >>
 
 This function will print out each question in the Questions hash, and wait
 for a response. It will then match that response against the Answers hash.
@@ -324,8 +334,7 @@ If there is a match, it will keep track of the number of correct answers, and
 move on to the next question, other wise it will give the correct answer, and
 go to the next question. After the last question, it will pass the number
 correct and the max number of questions on the test to the _Final function,
-which prints out your final score. The $Max variable is optional to be
-passed and will default to the total number of questions in the question file.
+which prints out your final score.
 
 =back
 
