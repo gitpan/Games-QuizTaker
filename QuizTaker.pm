@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.09;
+$VERSION=1.091;
 
 sub AUTOLOAD{
   my ($self)=@_;
@@ -281,8 +281,8 @@ Games::QuizTaker - Create and take your own quizzes and tests
 
 =head1 SYNOPSIS
 
-     use Quiz::Taker;
-     my $Q=Quiz::Taker->new(FileName=>"sampleqa");
+     use Games::QuizTaker;
+     my $Q=Games::QuizTaker->new(FileName=>"sampleqa");
      my %Data=();
      my $rData=$Q->load(\%Data);
      my ($rQuestions,$rAnswers,$rLengths,$rRandoms)=$Q->generate(\%Data);
@@ -369,8 +369,8 @@ Special thanks to everyone at http://perlmonks.org for their suggestions
 and contributions to this module, and to Damian Conway for his excellent
 book on Object Oriented Perl
 
-Another thank you also goes out to Chris Ahrends for suggesting the idea
-of having multiple answers for questions.
+Also, I would like to thank Chris Ahrends for his suggestions to improve this module, and to Mike Castle for pointing out a typo in my POD.
+
 
 =head1 AUTHOR
 
