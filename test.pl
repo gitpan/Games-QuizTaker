@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..9\n"; }
+BEGIN { $| = 1; print "1..10\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Games::QuizTaker;
 $loaded = 1;
@@ -74,4 +74,10 @@ if($Max == 0){
 }else{
   print"Max_Questions init ..... not ok\n";
 }
-
+my $Final=$Q3->_get_Score;
+if($Final eq "1"){
+  print"Final Score set ........ ok 10\n";
+}else{
+  print"Final Score set ........ not ok 10\n";
+}
+ 

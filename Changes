@@ -44,3 +44,8 @@ Revision history for Perl extension Games::QuizTaker.
 
 	- Modified the POD to correspond with the above change
 
+1.07  Mon Jan 14 13:01:52 2002
+	- Added the option of turning off the _Final_Score subroutine
+
+	- Modified the POD to correspond with the above change
+

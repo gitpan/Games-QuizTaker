@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.06;
+$VERSION=1.07;
 
 sub AUTOLOAD{
   my $self=shift;
@@ -21,6 +21,7 @@ sub new{
   my($class,%arg)=@_;
     bless{ _Delimiter        => $arg{Delimiter}|| "|",
 	   _Answer_Delimiter => $arg{Answer_Delimiter}|| " ", 
+           _Score            => $arg{Score}|| "1",
            _FileLength       => "0",
            _FileName         => $arg{FileName}||croak"No FileName given",
 	   _Max_Questions    => "0",
@@ -170,8 +171,13 @@ sub test{
       $question_number+=1;
     }
   }
-  &_Final($number_correct,$Max);
-  return;
+  my $Final=_get_Score();
+  if($Final == 1){
+    &_Final($number_correct,$Max);
+    return;
+  }else{
+    return;
+  }
 }
 
 sub _shuffle{
@@ -238,6 +244,11 @@ sub _get_Answer_Delimiter{
   return $$self{_Answer_Delimiter};
 }
 
+sub _get_Score{
+  my $self=shift;
+  return $$self{_Score};
+}
+
 #####################
 ## Debug Functions ##
 #####################
@@ -282,7 +293,7 @@ Games::QuizTaker - Create and take your own quizzes and tests
 
 =item new
 
-C<< new("FileName"=>"FILENAME","Delimiter"=>"Delimiter",Answer_Delimiter=>"Delimiter"); >>
+C<< new("FileName"=>"FILENAME","Delimiter"=>"Delimiter",Answer_Delimiter=>"Delimiter",Score=>"1"); >>
 
 This creates the Games::QuizTaker object and initializes it with two
 parameters. The FileName parameter is required, and the Delimiter is
@@ -292,7 +303,11 @@ it will default to the pipe ("|") character. The Answer_Delimiter is
 used for questions that have more than one correct answer. If the
 Answer_Delimiter parameter isn't passed, it will default to a space.
 When answering the questions within the test that have more than one
-answer, put a space between each answer.
+answer, put a space between each answer. There is also a parameter called
+Scores that also can be passed to the object. By default it is set to 1 and
+will print out the final score of the quiz when done. It can be set to 0,
+thus turning it off. This could be done when setting a script up as part of
+a login script and giving a "Question of the day".
 
 =item load
 
