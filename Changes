@@ -57,3 +57,8 @@ Revision history for Perl extension Games::QuizTaker.
 	  this module
 
 
+1.09  Sat Jun  8 23:16:09 2002
+	- Modified the AUTOLOAD subroutine
+
+	- Cleaned up some syntax in the test sub-routine
+

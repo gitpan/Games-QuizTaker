@@ -5,11 +5,13 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.08;
+$VERSION=1.09;
 
 sub AUTOLOAD{
-  my $self=shift;
-  carp"The function $AUTOLOAD is not initialized\n";
+  my ($self)=@_;
+  $AUTOLOAD=~/.*::_get(_\w+)/ or croak "No such method: $AUTOLOAD";
+  exists $self->{$1} or croak "No such attribute: $1";
+  return $self->{$1};
 }
 
 sub DESTROY{
@@ -44,7 +46,7 @@ sub load{
     croak"The Delimiter and Answer_Delimiter are the same";
   }
 
-  open(FH,"$Question_File")||die"Can't open $Question_File: $!\n";
+  open(FH,"$Question_File")||croak"Can't open $Question_File: $!";
   flock(FH,LOCK_SH);
   while(<FH>){
     if(/^$/ or /^#/){}else{
@@ -154,8 +156,7 @@ sub test{
         warn"Answer_Delimiter doesn't match internally";
       }
 
-      if($Answer_Sep eq " "){}elsif($Answer_Sep eq "|"){
-        $question_answer=~s/\|/ /;
+      if($Answer_Sep eq " "){
       }else{
         $question_answer=~s/$Answer_Sep/ /;
       }
