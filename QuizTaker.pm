@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.2;
+$VERSION=1.21;
 
 sub AUTOLOAD{
   my ($self)=@_;
@@ -36,7 +36,7 @@ sub load{
   my $Question_File=$self->get_FileName;
   my $Separator=$self->get_Delimiter;
   my $Answer_Sep=$self->get_Answer_Delimiter;
-  my ($question_number,$count,$ref,@sorter);
+  my ($question_number,$count);
 
   if($Answer_Sep eq $Separator){
     croak"The Delimiter and Answer_Delimiter are the same";
@@ -45,6 +45,7 @@ sub load{
   open(FH,"$Question_File")||croak"Can't open $Question_File: $!";
   flock(FH,LOCK_SH);
   while(<FH>){
+    my @sorter;
     if(/^$/ or /^#/){}else{
       $count++; 
       if($Separator eq "|"){ 
@@ -53,7 +54,7 @@ sub load{
         @sorter=split /$Separator/;
       }
       $question_number=shift @sorter;
-      $ref=\@sorter;
+      my $ref=\@sorter;
       $$Data{$question_number}=$ref;    
     }
   }
