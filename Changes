@@ -22,3 +22,13 @@ Revision history for Perl extension Games::QuizTaker.
 
 	- Modified the POD to correspond with the above changes
 
+
+1.04  Tue Nov 20 14:25:09 2001
+	- Modified the system('clear') call in the test function so
+	  that it now will work on either Windows or Unix
+
+	- Added the ability for questions to have more than one answer
+		- modified the functions new,load, and test
+
+	- Modified the POD to correspond with the above changes
+

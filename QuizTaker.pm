@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.03;
+$VERSION=1.04;
 
 sub AUTOLOAD{
   my $self=shift;
@@ -19,9 +19,10 @@ sub DESTROY{
 
 sub new{
   my($class,%arg)=@_;
-    bless{ _Delimiter  => $arg{Delimiter}|| "|",
-           _FileLength => "0",
-           _FileName   => $arg{FileName}||croak"No FileName given",
+    bless{ _Delimiter        => $arg{Delimiter}|| "|",
+	   _Answer_Delimiter => $arg{Answer_Delimiter}|| " ", 
+           _FileLength       => "0",
+           _FileName         => $arg{FileName}||croak"No FileName given",
          },$class;
 }
   
@@ -29,12 +30,17 @@ sub load{
   my $self=shift;
   my $Question_File=_get_FileName($self);
   my $Separator=_get_Delimiter($self);
+  my $Answer_Sep=_get_Answer_Delimiter($self);
   my $Data=shift;
   my $question_number;
   my $length;
   my $count;
   my $C;
   my @sorter=();
+
+  if($Answer_Sep eq $Separator){
+    croak"The Delimiter and Answer_Delimiter are the same";
+  }
 
   open(FH,"$Question_File")||die"Can't open $Question_File: $!\n";
   flock(FH,LOCK_SH);
@@ -107,6 +113,7 @@ sub test{
   my $Lengths=shift;
   my $Randoms=shift;
   my $Max=shift;
+  my $Answer_Sep=_get_Answer_Delimiter($self);
 
   if(!defined $Max){
     $Max=&_get_FileLength($self);
@@ -115,9 +122,9 @@ sub test{
   my($length,$answer,$key,$X);
   my $question_number=1;
   my $question_answer;
-  my $number_correct;
+  my $number_correct=0;
 
-  system('clear');
+  system(($^O eq "MSWin32"?'cls':'clear'));
   print"\n";
 
   while($question_number<=$Max){
@@ -137,6 +144,20 @@ sub test{
     $question_answer=$$Answers{$key};
     chomp($question_answer);
     $question_answer=uc $question_answer;
+
+    my $ln=length($question_answer);
+
+    if($ln>1){
+      if($question_answer!~/$Answer_Sep/){
+        warn"Answer_Delimiter doesn't match internally";
+      }
+
+      if($Answer_Sep eq " "){}elsif($Answer_Sep eq "|"){
+        $question_answer=~s/\|/ /;
+      }else{
+        $question_answer=~s/$Answer_Sep/ /;
+      }
+    }
 
     if($answer eq $question_answer){
       print"That is correct!!\n\n";
@@ -166,11 +187,17 @@ sub _shuffle{
 sub _Final{
   my $Correct=shift;
   my $Max=shift;
-  my $Percentage=($Correct/$Max)*100;
+  if($Correct >= 1){
+    my $Percentage=($Correct/$Max)*100;
 
-  print"You answered $Correct out of $Max correctly.\n";
-  printf"For a final score of %02d%%\n",$Percentage;
-  return;
+    print"You answered $Correct out of $Max correctly.\n";
+    printf"For a final score of %02d%%\n",$Percentage;
+    return;
+  }else{
+    print"You answered 0 out of $Max correctly.\n";
+    print"For a final score of 0%\n";
+    return;
+  }
 }
 
 sub _set_FileLength{
@@ -193,16 +220,28 @@ sub _get_Delimiter{
   my $self=shift;
   return $$self{_Delimiter};
 }
+
+sub _get_Answer_Delimiter{
+  my $self=shift;
+  return $$self{_Answer_Delimiter};
+}
+
 #####################
 ## Debug Functions ##
 #####################
 sub _Print_Object{
   my $self=shift;
+  my $structure=shift;
   require Data::Dumper;
-  print Data::Dumper->Dumper($self); 
+
+  if(defined $structure){
+    print Data::Dumper->Dumper($structure);
+  }else{
+    print Data::Dumper->Dumper($self); 
+  }
 }
 
-sub _Get_VERSION{
+sub _get_VERSION{
   my $self=shift;
   return $VERSION;
 }
@@ -231,13 +270,17 @@ Games::QuizTaker - Create and take your own quizzes and tests
 
 =item new
 
-C<< new("FileName"=>"FILENAME","Delimiter"=>"Delimiter"); >>
+C<< new("FileName"=>"FILENAME","Delimiter"=>"Delimiter",Answer_Delimiter=>"Delimiter"); >>
 
 This creates the Games::QuizTaker object and initializes it with two
 parameters. The FileName parameter is required, and the Delimiter is
 optional. The Delimiter is what is used to separate the question and
 answers in the question file. If the Delimiter parameter isn't passed,
-it will default to the pipe ("|") character.
+it will default to the pipe ("|") character. The Answer_Delimiter is
+used for questions that have more than one correct answer. If the
+Answer_Delimiter parameter isn't passed, it will default to a space.
+When answering the questions within the test that have more than one
+answer, put a space between each answer.
 
 =item load
 
@@ -246,7 +289,9 @@ C<< $refHash=$QT->load(\%Data); >>
 This function will load the hash with all of the questions and answers
 from the file that you specify when you create the object. It also sets
 another parameter within the $QT object called FileLength, which is the
-total number of questions within the file.
+total number of questions within the file. It will also check to see if
+the _Answer_Delimiter parameter is the same as the _Delimiter parameter.
+If they are the same, then the program will croak.
 
 =item generate
 
@@ -294,6 +339,9 @@ print out the contents of the object and its parameters.
 Special thanks to everyone at http://perlmonks.org for their suggestions
 and contributions to this module, and to Damian Conway for his excellent
 book on Object Oriented Perl
+
+Another thank you also goes out to Chris Ahrends for suggesting the idea
+of having multiple answers for questions.
 
 =head1 AUTHOR
 
