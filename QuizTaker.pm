@@ -1,5 +1,5 @@
 package Games::QuizTaker;
-$VERSION=1.00;
+$VERSION=1.01;
 use strict;
 use vars qw($AUTOLOAD);
 use Fcntl qw/:flock/;

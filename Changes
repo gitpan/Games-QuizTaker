@@ -4,3 +4,6 @@ Revision history for Perl extension Games::QuizTaker.
 	- original version; created by h2xs 1.20 with options
 		-AXn Games::QuizTaker
 
+1.01  Sat Oct 20 19:27:50 2001
+	- Added the README file
+
