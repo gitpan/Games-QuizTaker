@@ -65,3 +65,9 @@ Revision history for Perl extension Games::QuizTaker.
 1.091 Thu Jun 20 14:19:01 2002
 	- Corrected a typo in the POD
 
+1.10  Wed Jul  3 16:26:00 2002
+	- Updated the HTML version of the POD
+
+	- Optimized an if..elsif..else statement within the generate function
+
+

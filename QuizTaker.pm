@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.091;
+$VERSION=1.10;
 
 sub AUTOLOAD{
   my ($self)=@_;
@@ -76,16 +76,29 @@ sub generate{
   my $Data=shift;
   my $Max_Questions=shift;
 
-  if(!defined $Max_Questions){
-    $Max_Questions=$Total_Questions;
-    &_set_Max_Questions($self,$Max_Questions);
-  }elsif($Max_Questions > $Total_Questions){
-    croak"Number of questions exceeds the amount in $FileName";
-  }elsif($Max_Questions < 1){
-    croak"Must have at least one question in the test";
-  }else{
-    &_set_Max_Questions($self,$Max_Questions);
-  }
+  $Max_Questions = $Total_Questions unless defined $Max_Questions;
+
+  croak"Number of questions in $FileName exceeded"
+    if $Max_Questions > $Total_Questions;
+
+  croak"Must have at least one question in test"
+    if $Max_Questions < 1;
+
+  &_set_Max_Questions($self,$Max_Questions);
+
+#
+# Original Code
+# 
+# if(!defined $Max_Questions){
+#    $Max_Questions=$Total_Questions;
+#    &_set_Max_Questions($self,$Max_Questions);
+#  }elsif($Max_Questions > $Total_Questions){
+#    croak"Number of questions exceeds the amount in $FileName";
+#  }elsif($Max_Questions < 1){
+#    croak"Must have at least one question in the test";
+#  }else{
+#    &_set_Max_Questions($self,$Max_Questions);
+#  }
   
   my %Randoms=();
   my @Randoms=();
@@ -123,7 +136,7 @@ sub test{
   my $Randoms=shift;
   my $Answer_Sep=_get_Answer_Delimiter($self);
   my $Max=_get_Max_Questions($self);
-  my($length,$answer,$key,$X);
+  my ($length,$answer,$key,$X);
   my $question_number=1;
   my $question_answer;
   my $number_correct=0;

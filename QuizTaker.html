@@ -1,131 +1,16 @@
 <HTML>
 <HEAD>
-<TITLE>Games::QuizTaker - Create and take your own quizzes and tests</TITLE>
-<LINK REV="made" HREF="mailto:Thomas_J_Stanley@msn.com">
+<TITLE>Games::QuizTaker</TITLE>
+<LINK REV="made" HREF="mailto:bhcompile@stripples.devel.redhat.com">
 </HEAD>
 
 <BODY>
 
 <A NAME="__index__"></A>
 <!-- INDEX BEGIN -->
-
-<UL>
-
-	<LI><A HREF="#name">NAME</A></LI>
-	<LI><A HREF="#synopsis">SYNOPSIS</A></LI>
-	<LI><A HREF="#description">DESCRIPTION</A></LI>
-	<LI><A HREF="#export">EXPORT</A></LI>
-	<LI><A HREF="#debugging">DEBUGGING</A></LI>
-	<LI><A HREF="#author">AUTHOR</A></LI>
-	<LI><A HREF="#copyright">COPYRIGHT</A></LI>
-</UL>
 <!-- INDEX END -->
 
-<HR>
-<P>
-<HR>
-<H1><A NAME="name">NAME</A></H1>
-<P>Games::QuizTaker - Create and take your own quizzes and tests</P>
-<P>
-<HR>
-<H1><A NAME="synopsis">SYNOPSIS</A></H1>
-<PRE>
-     use Quiz::Taker;
-     my $Q=Quiz::Taker-&gt;new(FileName=&gt;&quot;sampleqa&quot;);
-     my %Data=();
-     my $rData=$Q-&gt;load(\%Data);
-     my ($rQuestions,$rAnswers,$rLengths,$rRandoms)=$Q-&gt;generate(\%Data);
-     $Q-&gt;test($rQuestions,$rAnswers,$rLengths,$rRandoms);</PRE>
-<P>
-<HR>
-<H1><A NAME="description">DESCRIPTION</A></H1>
-<DL>
-<DT><STRONG><A NAME="item_new">new</A></STRONG><BR>
-<DD>
-<A HREF="#item_new"><CODE>new(&quot;FileName&quot;=&gt;&quot;FILENAME&quot;,&quot;Delimiter&quot;=&gt;&quot;Delimiter&quot;,Answer_Delimiter=&gt;&quot;Delimiter&quot;,Score=&gt;&quot;1&quot;);</CODE></A>
-<P>This creates the Games::QuizTaker object and initializes it with two
-parameters. The FileName parameter is required, and the Delimiter is
-optional. The Delimiter is what is used to separate the question and
-answers in the question file. If the Delimiter parameter isn't passed,
-it will default to the pipe (``|'') character. The Answer_Delimiter is
-used for questions that have more than one correct answer. If the
-Answer_Delimiter parameter isn't passed, it will default to a space.
-When answering the questions within the test that have more than one
-answer, put a space between each answer. There is also a parameter called
-Scores that also can be passed to the object. By default it is set to 1 and
-will print out the final score of the quiz when done. It can be set to 0,
-thus turning it off. This could be done when setting a script up as part of
-a login script and giving a ``Question of the day''.</P>
-<P></P>
-<DT><STRONG><A NAME="item_load">load</A></STRONG><BR>
-<DD>
-<A HREF="#item_load"><CODE>$refHash=$QT-&gt;load(\%Data);</CODE></A>
-<P>This function will load the hash with all of the questions and answers
-from the file that you specify when you create the object. It also sets
-another parameter within the $QT object called FileLength, which is the
-total number of questions within the file. It will also check to see if
-the _Answer_Delimiter parameter is the same as the _Delimiter parameter.
-If they are the same, then the program will croak.</P>
-<P></P>
-<DT><STRONG><A NAME="item_generate">generate</A></STRONG><BR>
-<DD>
-<A HREF="#item_generate"><CODE>($refHash1,$refHash2,$refHash3,$refArray1)=$QT-&gt;generate(\%Data,$Max);</CODE></A>
-<P>This function will generate the 3 hashes and 1 array needed by the test
-function. The first reference ($refHash1) are the questions that will be
-asked by the test function. The second reference ($refHash2) are the answers
-to those questions. The third reference ($refHash3) is the length of the
-array that is the value for each key of $refHash1. And $refArray1 is a
-sequence of random numbers that is generated from the total number of
-questions ($Max) that you wish to answer. The $refArray1 is also randomized
-further after its generation by the internal _shuffle function which is a
-Fisher-Yates shuffle. If the maximum number of questions you wish to answer
-on the quiz ($Max) is not passed to the function, it will default to the
-maximum number of questions in the file (determined by the FileLength
-parameter within the object. It will also set the Max_Questions parameter
-within the object, which will be later used by the test function to keep
-track of the number of questions printed out.</P>
-<P></P>
-<DT><STRONG><A NAME="item_test">test</A></STRONG><BR>
-<DD>
-<A HREF="#item_test"><CODE>$QT-&gt;test($refHash1,$refHash2,$refHash3,$refArray1);</CODE></A>
-<P>This function will print out each question in the Questions hash, and wait
-for a response. It will then match that response against the Answers hash.
-If there is a match, it will keep track of the number of correct answers, and 
-move on to the next question, other wise it will give the correct answer, and
-go to the next question. After the last question, it will pass the number
-correct and the max number of questions on the test to the _Final function,
-which prints out your final score.</P>
-<P></P></DL>
-<P>
-<HR>
-<H1><A NAME="export">EXPORT</A></H1>
-<P>None by default</P>
-<P>
-<HR>
-<H1><A NAME="debugging">DEBUGGING</A></H1>
-<P>There is a single function available for debugging. When called, it will
-print out the contents of the object and its parameters.
-</P>
-<HR>
-<H1><A NAME="acknowledge">ACKNOWLEDGEMENTS</A></H1>
-<P>Special thanks to everyone at <A HREF="http://perlmonks.org">http://perlmonks.org</A> for their suggestions
-and contributions to this module, and to Damian Conway for his excellent
-book on Object Oriented Perl</P>
-<P>Another thank you also goes out to Chris Ahrends for suggesting the idea
-of having multiple answers for questions.</P>
-<P>
-<HR>
-<H1><A NAME="author">AUTHOR</A></H1>
-<P>Thomas Stanley</P>
-<P><A HREF="mailto:Thomas_J_Stanley@msn.com">Thomas_J_Stanley@msn.com</A></P>
-<P>I can also be found at <A HREF="http://perlmonks.org">http://perlmonks.org</A> as TStanley. You can direct
-any questions relating to this module there.</P>
-<P>
-<HR>
-<H1><A NAME="copyright">COPYRIGHT</A></H1>
-<P>Copyright (C)2001,2002 Thomas Stanley. All rights reserved. This program is free
-software; you can redistribute it and/or modify it under the same terms as
-Perl itself.
-</P>
+
 </BODY>
+
 </HTML>

@@ -24,17 +24,20 @@ if($$Q1{_FileName} eq "sampleqa"){
 }else{
   print"{_FileName} ............ not ok 2\n";
 }
+
 if($$Q1{_Delimiter} eq "|"){
   print"{_Delimiter} ........... ok 3\n";
 }else{
   print"{_Delimiter} ........... not ok 3\n";
 }
+
 $Q2=Games::QuizTaker->new(FileName=>"sample.csv",Delimiter=>",");
 if($$Q2{_Delimiter} eq ","){
   print"{_Delimiter} init ...... ok 4\n";
 }else{
   print"{_Delimiter} init ...... not ok 4\n";
 }
+
 my %hash=();
 my $refhash=$Q1->load(\%hash);
 my $Num=keys %hash;
@@ -43,24 +46,22 @@ if($Num == 10){
 }else{
   print"Load function .......... not ok 5\n";
 }
+
 my($ref1,$ref2,$ref3,$ref4)=$Q1->generate(\%hash);
 my $num=keys %{$ref1};
-#foreach my $key(keys %$ref1){
-#  foreach my $ln(@$ref1{$key}){
-#    print"$key => $$ref1{$key}[$ln]\n";
-#  }
-#}
 if($num == 10){
   print"Generate function ...... ok 6\n";
 }else{
   print"Generate function ...... not ok 6\n";
 }
+
 my $V=$Q2->_get_VERSION;
-if($V=~/^\d\.\d{2}/){
+if($V=~/^\d\.\d{1,3}/){
   print"Version function ....... ok 7\n";
 }else{
   print"Version function ....... not ok 7\n";
 }
+
 my $Q3=Games::QuizTaker->new(FileName=>"sample.csv",Delimiter=>",",Answer_Delimiter=>"x");
 my $del=$Q3->_get_Answer_Delimiter;
 if($del eq "x"){
@@ -68,12 +69,14 @@ if($del eq "x"){
 }else{
   print"Answer_Delimiter init .. not ok 8\n";
 }
+
 my $Max=$Q3->_get_Max_Questions;
 if($Max == 0){
   print"Max_Questions init ..... ok 9\n";
 }else{
   print"Max_Questions init ..... not ok\n";
 }
+
 my $Final=$Q3->_get_Score;
 if($Final eq "1"){
   print"Final Score set ........ ok 10\n";
