@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.07;
+$VERSION=1.08;
 
 sub AUTOLOAD{
   my $self=shift;
@@ -171,7 +171,7 @@ sub test{
       $question_number+=1;
     }
   }
-  my $Final=_get_Score();
+  my $Final=_get_Score($self);
   if($Final == 1){
     &_Final($number_correct,$Max);
     return;
@@ -382,7 +382,7 @@ any questions relating to this module there.
 
 =head1 COPYRIGHT
 
-Copyright (C)2001 Thomas Stanley. All rights reserved. This program is free
+Copyright (C)2001,2002 Thomas Stanley. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms as
 Perl itself.
  

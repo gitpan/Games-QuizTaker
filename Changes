@@ -49,3 +49,11 @@ Revision history for Perl extension Games::QuizTaker.
 
 	- Modified the POD to correspond with the above change
 
+1.08  Tue Apr  2 14:41:39 2002
+	- Corrected the internal _get_Score Function, so that it doesn't
+	  throw an error at the end of the quiz
+
+	- Added POD in HTML format for the ActiveState distribution of
+	  this module
+
+
