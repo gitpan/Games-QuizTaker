@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.21;
+$VERSION=1.22;
 
 sub AUTOLOAD{
   my ($self)=@_;
@@ -23,7 +23,7 @@ sub new{
   my($class,%arg)=@_;
     bless{ _Delimiter        => $arg{Delimiter}|| "|",
 	   _Answer_Delimiter => $arg{Answer_Delimiter}|| " ", 
-           _Score            => $arg{Score}|| "1",
+           _Score            => $arg{Score}|| undef,
            _FileLength       => "0",
            _FileName         => $arg{FileName}||croak"No FileName given",
 	   _Max_Questions    => "0",
@@ -155,7 +155,7 @@ sub test{
     }
   }
   my $Final=$self->get_Score;
-  if($Final == 1){
+  if(defined $Final){
     $self->Final($number_correct,$Max);
     return;
   }else{
@@ -264,7 +264,7 @@ Games::QuizTaker - Create and take your own quizzes and tests
 =head1 SYNOPSIS
 
      use Games::QuizTaker;
-     my $Q=Games::QuizTaker->new(FileName=>"sampleqa");
+     my $Q=Games::QuizTaker->new(FileName=>"sampleqa",Score=>1);
      my %Data=();
      my $rData=$Q->load(\%Data);
      my ($rQuestions,$rAnswers,$rRandoms)=$Q->generate(\%Data);
@@ -287,10 +287,9 @@ used for questions that have more than one correct answer. If the
 Answer_Delimiter parameter isn't passed, it will default to a space.
 When answering the questions within the test that have more than one
 answer, put a space between each answer. There is also a parameter called
-Scores that also can be passed to the object. By default it is set to 1 and
-will print out the final score of the quiz when done. It can be set to 0,
-thus turning it off. This could be done when setting a script up as part of
-a login script and giving a "Question of the day".
+Score that also can be passed to the object. If set, this parameter will
+print out a final score, giving the number of questions answered correctly,
+and the overall percentage. By default, this is turned off. 
 
 =item load
 
@@ -349,8 +348,7 @@ Special thanks to everyone at http://perlmonks.org for their suggestions
 and contributions to this module, and to Damian Conway for his excellent
 book on Object Oriented Perl
 
-Also, I would like to thank Chris Ahrends for his suggestions to improve this module,
-and to Mike Castle for pointing out a typo in my POD.
+Also, I would like to thank Chris Ahrends for his suggestions to improve this module, and to Mike Castle for pointing out a typo in my POD.
 
 =head1 AUTHOR
 
@@ -363,7 +361,7 @@ any questions relating to this module there.
 
 =head1 COPYRIGHT
 
-Copyright (C)2001,2002 Thomas Stanley. All rights reserved. This program is free
+Copyright (C)2001-2003 Thomas Stanley. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms as
 Perl itself.
  

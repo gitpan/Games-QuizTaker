@@ -56,7 +56,6 @@ Revision history for Perl extension Games::QuizTaker.
 	- Added POD in HTML format for the ActiveState distribution of
 	  this module
 
-
 1.09  Sat Jun  8 23:16:09 2002
 	- Modified the AUTOLOAD subroutine
 
@@ -84,4 +83,16 @@ Revision history for Perl extension Games::QuizTaker.
 
 1.21  Mon Jan  6 14:21:28 2003
 	- Discovered a small bug in the load function and fixed it.
+
+1.22  Tue Jan 21 14:52:51 2003
+	- Corrected a problem with the Score parameter in the object. It
+	  is now undef by default, and will only print out a final score
+	  if set.
+
+	- Made the necessary changes in the test script, and added
+	  a new test to check for functionality
+
+	- Made corresponding changes to the POD
+
+	- Made corresponding changes to the HTML version of the POD
 
