@@ -5,11 +5,11 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.12;
+$VERSION=1.2;
 
 sub AUTOLOAD{
   my ($self)=@_;
-  $AUTOLOAD=~/.*::_get(_\w+)/ or croak "No such method: $AUTOLOAD";
+  $AUTOLOAD=~/.*::[sg]et(_\w+)/ or croak "No such method: $AUTOLOAD";
   exists $self->{$1} or croak "No such attribute: $1";
   return $self->{$1};
 }
@@ -32,12 +32,11 @@ sub new{
   
 sub load{
   my $self=shift;
-  my $Question_File=_get_FileName($self);
-  my $Separator=_get_Delimiter($self);
-  my $Answer_Sep=_get_Answer_Delimiter($self);
   my $Data=shift;
-  my ($question_number,$count,$ref);
-  my @sorter=();
+  my $Question_File=$self->get_FileName;
+  my $Separator=$self->get_Delimiter;
+  my $Answer_Sep=$self->get_Answer_Delimiter;
+  my ($question_number,$count,$ref,@sorter);
 
   if($Answer_Sep eq $Separator){
     croak"The Delimiter and Answer_Delimiter are the same";
@@ -60,17 +59,15 @@ sub load{
   }
   flock(FH,LOCK_UN);
   close FH;
-  &_set_FileLength($self,$count);
+  $self->set_FileLength($count);
   return $Data;   
 }
 
 sub generate{
-  my $self=shift;
-  my $Total_Questions=_get_FileLength($self);
-  my $FileName=_get_FileName($self);
-  my $Data=shift;
-  my $Max_Questions=shift;
-
+  my ($self,$Data,$Max_Questions)=@_;
+  my $Total_Questions=$self->get_FileLength;
+  my $FileName=$self->get_FileName;
+  
   $Max_Questions = $Total_Questions unless defined $Max_Questions;
 
   croak"Number of questions in $FileName exceeded"
@@ -79,7 +76,7 @@ sub generate{
   croak"Must have at least one question in test"
     if $Max_Questions < 1;
 
-  &_set_Max_Questions($self,$Max_Questions);
+  $self->set_Max_Questions($Max_Questions);
 
   my %Randoms=();
   my @Randoms=();
@@ -93,14 +90,14 @@ sub generate{
   }
 
   @Randoms=keys %Randoms;
-  &_shuffle(\@Randoms);
+  $self->shuffle(\@Randoms);
 
   for(my $D=0;$D<$Max_Questions;$D++){
     $Test_Answers{$Randoms[$D]}=pop @{$$Data{$Randoms[$D]}};
     $Test_Questions{$Randoms[$D]} = $$Data{$Randoms[$D]};
   }
   
-  return \%Test_Questions,\%Test_Answers,\@Randoms; 
+   return \%Test_Questions,\%Test_Answers,\@Randoms; 
 }
 
 sub test{
@@ -108,11 +105,10 @@ sub test{
   my $Questions=shift;
   my $Answers=shift;
   my $Randoms=shift;
-  my $Answer_Sep=_get_Answer_Delimiter($self);
-  my $Max=_get_Max_Questions($self);
-  my ($answer,$key,$line);
+  my $Answer_Sep=$self->get_Answer_Delimiter;
+  my $Max=$self->get_Max_Questions;
+  my ($answer,$key,$line,$question_answer);
   my $question_number=1;
-  my $question_answer;
   my $number_correct=0;
 
   system(($^O eq "MSWin32"?'cls':'clear'));
@@ -141,7 +137,6 @@ sub test{
       if($question_answer!~/$Answer_Sep/){
         warn"Answer_Delimiter doesn't match internally";
       }
-
       if($Answer_Sep eq " "){
       }else{
         $question_answer=~s/$Answer_Sep/ /;
@@ -158,17 +153,18 @@ sub test{
       $question_number++;
     }
   }
-  my $Final=_get_Score($self);
+  my $Final=$self->get_Score;
   if($Final == 1){
-    &_Final($number_correct,$Max);
+    $self->Final($number_correct,$Max);
     return;
   }else{
     return;
   }
 }
 
-sub _shuffle{
+sub shuffle{
   ## Fisher-Yates shuffle ##
+  my $self=shift;
   my $array=shift;
   my $x;
   for($x=@$array;--$x;){
@@ -178,12 +174,11 @@ sub _shuffle{
   }
 }
 
-sub _Final{
-  my $Correct=shift;
-  my $Max=shift;
+sub Final{
+  my ($self,$Correct,$Max)=@_;
+  
   if($Correct >= 1){
     my $Percentage=($Correct/$Max)*100;
-
     print"You answered $Correct out of $Max correctly.\n";
     printf"For a final score of %02d%%\n",$Percentage;
     return;
@@ -194,44 +189,44 @@ sub _Final{
   }
 }
 
-sub _set_FileLength{
+sub set_FileLength{
   my $self=shift;
   my $count=shift;
   $$self{_FileLength}=$count;
 }
 
-sub _set_Max_Questions{
+sub set_Max_Questions{
   my $self=shift;
   my $Questions=shift;
   $$self{_Max_Questions}=$Questions;
 }
 
-sub _get_FileLength{
+sub get_FileLength{
   my $self=shift;
   return $$self{_FileLength};
 }
 
-sub _get_Max_Questions{
+sub get_Max_Questions{
   my $self=shift;
   return $$self{_Max_Questions};
 }
 
-sub _get_FileName{
+sub get_FileName{
   my $self=shift;
   return $$self{_FileName};
 }
 
-sub _get_Delimiter{
+sub get_Delimiter{
   my $self=shift;
   return $$self{_Delimiter};
 }
 
-sub _get_Answer_Delimiter{
+sub get_Answer_Delimiter{
   my $self=shift;
   return $$self{_Answer_Delimiter};
 }
 
-sub _get_Score{
+sub get_Score{
   my $self=shift;
   return $$self{_Score};
 }
@@ -239,7 +234,7 @@ sub _get_Score{
 #####################
 ## Debug Functions ##
 #####################
-sub _Print_Object{
+sub Print_Object{
   my $self=shift;
   my $structure=shift;
   require Data::Dumper;
@@ -251,7 +246,7 @@ sub _Print_Object{
   }
 }
 
-sub _get_VERSION{
+sub get_VERSION{
   my $self=shift;
   return $VERSION;
 }
@@ -353,8 +348,8 @@ Special thanks to everyone at http://perlmonks.org for their suggestions
 and contributions to this module, and to Damian Conway for his excellent
 book on Object Oriented Perl
 
-Also, I would like to thank Chris Ahrends for his suggestions to improve
-this module, and to Mike Castle for pointing out a typo in my POD
+Also, I would like to thank Chris Ahrends for his suggestions to improve this module,
+and to Mike Castle for pointing out a typo in my POD.
 
 =head1 AUTHOR
 

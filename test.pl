@@ -40,14 +40,14 @@ if($$Q2{_Delimiter} eq ","){
 
 my %hash=();
 my $refhash=$Q1->load(\%hash);
-my $Num=keys %hash;
+my $Num=keys %$refhash;
 if($Num == 9){
   print"Load function .......... ok 5\n";
 }else{
   print"Load function .......... not ok 5\n";
 }
 
-my($ref1,$ref2,$ref3)=$Q1->generate(\%hash);
+my($ref1,$ref2,$ref3,$ref4)=$Q1->generate(\%hash);
 my $num=keys %{$ref1};
 if($num == 9){
   print"Generate function ...... ok 6\n";
@@ -55,7 +55,7 @@ if($num == 9){
   print"Generate function ...... not ok 6\n";
 }
 
-my $V=$Q2->_get_VERSION;
+my $V=$Q2->get_VERSION;
 if($V=~/^\d\.\d{1,3}/){
   print"Version function ....... ok 7\n";
 }else{
@@ -63,21 +63,21 @@ if($V=~/^\d\.\d{1,3}/){
 }
 
 my $Q3=Games::QuizTaker->new(FileName=>"sample.csv",Delimiter=>",",Answer_Delimiter=>"x");
-my $del=$Q3->_get_Answer_Delimiter;
+my $del=$Q3->get_Answer_Delimiter;
 if($del eq "x"){
   print"Answer_Delimiter init .. ok 8\n";
 }else{
   print"Answer_Delimiter init .. not ok 8\n";
 }
 
-my $Max=$Q3->_get_Max_Questions;
+my $Max=$Q3->get_Max_Questions;
 if($Max == 0){
   print"Max_Questions init ..... ok 9\n";
 }else{
   print"Max_Questions init ..... not ok\n";
 }
 
-my $Final=$Q3->_get_Score;
+my $Final=$Q3->get_Score;
 if($Final eq "1"){
   print"Final Score set ........ ok 10\n";
 }else{
