@@ -1,6 +1,5 @@
 To install
 ==========
-
 perl Makefile.PL
 make
 make test
@@ -12,4 +11,6 @@ Text::Wrap
 Test::More
 Data::Dumper
 Fcntl
+Test::Pod
+Test::Harness
 

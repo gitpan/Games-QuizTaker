@@ -8,5 +8,7 @@ WriteMakefile(
                             Text::Wrap=>0,
                             Fcntl=>0,
 			    Test::More => 0,
+			    Test::Harness => 0,
+			    Test::Pod => 0,
                            }, # e.g., Module::Name => 1.1
 );

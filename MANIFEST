@@ -2,7 +2,10 @@ Changes
 MANIFEST
 Makefile.PL
 QuizTaker.pm
-test.pl
-sampleqa
-sample.csv
+t/sampleqa
+t/sample.csv
+t/01load.t
+t/02generate.t
+t/03exceptions.t
+t/04pod.t
 README

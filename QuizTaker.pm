@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.26;
+$VERSION=1.27;
 
 sub AUTOLOAD{
   my ($self)=@_;

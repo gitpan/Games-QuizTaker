@@ -115,3 +115,7 @@ Revision history for Perl extension Games::QuizTaker.
 
 	- Fixed a formatting problem within the pod
 
+1.27  Tue Jan 11 09:23:04 2005
+	- Reaccomplished the tests using Test::Harness and added a test for
+	  the POD using Test::Pod
+
