@@ -53,7 +53,6 @@ my $num=keys %{$ref1};
 if($num == 10){
   print"Generate function ...... ok 6\n";
 }else{
-  print"num is $num\n";
   print"Generate function ...... not ok 6\n";
 }
 my $V=$Q2->_get_VERSION;

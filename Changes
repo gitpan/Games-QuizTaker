@@ -32,3 +32,8 @@ Revision history for Perl extension Games::QuizTaker.
 
 	- Modified the POD to correspond with the above changes
 
+1.05  Thu Dec  6 15:41:38 2001
+	- Added a test to check to see if the $Max_Questions is less
+	  than 1 in the generate function. If it is, the module will
+	  croak.
+

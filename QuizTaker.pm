@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.04;
+$VERSION=1.05;
 
 sub AUTOLOAD{
   my $self=shift;
@@ -74,8 +74,12 @@ sub generate{
 
   if(!defined $Max_Questions){
     $Max_Questions=$Total_Questions;
-  }elsif($Max_Questions > $Total_Questions){
+  }
+  if($Max_Questions > $Total_Questions){
     croak"Number of questions exceeds the amount in $FileName";
+  }
+  if($Max_Questions < 1){
+    croak"Must have at least one question in the test";
   }
   
   my %Randoms=();
