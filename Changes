@@ -102,3 +102,6 @@ Revision history for Perl extension Games::QuizTaker.
 	  test functions will properly split/substitute on whatever
 	  is passed as a delimiter.
 
+1.25  Wed Oct 29 12:29:04 2003
+	- Re-implemented the tests using the Test::More module
+

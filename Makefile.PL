@@ -7,5 +7,6 @@ WriteMakefile(
     'PREREQ_PM'		=> {Carp=>0,
                             Text::Wrap=>0,
                             Fcntl=>0,
+			    Test::More => 0,
                            }, # e.g., Module::Name => 1.1
 );
