@@ -1,5 +1,5 @@
 package Games::QuizTaker;
-$VERSION=1.01;
+$VERSION=1.02;
 use strict;
 use vars qw($AUTOLOAD);
 use Fcntl qw/:flock/;
@@ -83,7 +83,7 @@ sub generate{
 
   for(1..$Max_Questions){
     my $question_number=int(rand($Total_Questions)+1);
-    redo if exists ($Randoms{$question_number});
+    redo if exists $Randoms{$question_number};
     $Randoms{$question_number}=1;
   }
 
@@ -120,7 +120,7 @@ sub test{
   system('clear');
   print"\n";
 
-  while($question_number<$Max){
+  while($question_number<=$Max){
     $key=shift @$Randoms;
     $length=$$Lengths{$key};
 

@@ -6,4 +6,8 @@ Revision history for Perl extension Games::QuizTaker.
 
 1.01  Sat Oct 20 19:27:50 2001
 	- Added the README file
+	
+1.02  Fri Nov 02 11:17:21 2001
+	- located and fixed bug in the test function that kept
+	  it from printing all of the questions.
 
