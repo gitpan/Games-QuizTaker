@@ -1,13 +1,24 @@
 Revision history for Perl extension Games::QuizTaker.
 
 1.00  Mon Oct 01 13:35:59 2001
-	- original version; created by h2xs 1.20 with options
+	- Original version; created by h2xs 1.20 with options
 		-AXn Games::QuizTaker
 
 1.01  Sat Oct 20 19:27:50 2001
 	- Added the README file
 	
 1.02  Fri Nov 02 11:17:21 2001
-	- located and fixed bug in the test function that kept
+	- Located and fixed bug in the test function that kept
 	  it from printing all of the questions.
+
+1.03  Thu Nov 15 09:27:58 2001
+	- Redesigned object constructor call and added get/set
+	  functions for parameters within the object.
+		- Changed the name and style of the parameters when
+	  	  creating the object
+		- Modified test.pl to correspond with the above
+		  changes
+		- Added a debugging function
+
+	- Modified the POD to correspond with the above changes
 

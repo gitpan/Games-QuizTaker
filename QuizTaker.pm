@@ -1,37 +1,34 @@
 package Games::QuizTaker;
-$VERSION=1.02;
 use strict;
-use vars qw($AUTOLOAD);
+use vars qw($AUTOLOAD $VERSION);
 use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-  sub AUTOLOAD{
-    carp"The function $AUTOLOAD is not initialized\n";
-  }
+$VERSION=1.03;
 
-  sub DESTROY{
-    my $self=shift;
-    undef $self;
-  }
-
-sub new{
+sub AUTOLOAD{
   my $self=shift;
-  my $params=shift;
-  if(!exists $$params{-FileName}){
-    croak"No filename given";
-  }
-  if(!exists $$params{-Delimitor}){
-    $$params{-Delimitor}="|";
-  }
-  bless $params,$self;
-  return $params;
+  carp"The function $AUTOLOAD is not initialized\n";
 }
 
+sub DESTROY{
+  my $self=shift;
+  undef $self;
+}
+
+sub new{
+  my($class,%arg)=@_;
+    bless{ _Delimiter  => $arg{Delimiter}|| "|",
+           _FileLength => "0",
+           _FileName   => $arg{FileName}||croak"No FileName given",
+         },$class;
+}
+  
 sub load{
   my $self=shift;
-  my $Question_File=$$self{-FileName};
-  my $Separator=$$self{-Delimitor};
+  my $Question_File=_get_FileName($self);
+  my $Separator=_get_Delimiter($self);
   my $Data=shift;
   my $question_number;
   my $length;
@@ -58,22 +55,23 @@ sub load{
   }
   flock(FH,LOCK_UN);
   close FH;
-  $$self{-FileLength}=$count;
+  &_set_FileLength($self,$count);
   return $Data;   
 }
 
 sub generate{
   my $self=shift;
-  my $Total_Questions=$$self{-FileLength};
+  my $Total_Questions=_get_FileLength($self);
+  my $FileName=_get_FileName($self);
   my $Data=shift;
   my $Max_Questions=shift;
+
   if(!defined $Max_Questions){
-    $Max_Questions=$$self{-FileLength};
-  }else{
-    if($Max_Questions > $Total_Questions){
-      croak"Number of questions exceeds the amount in $$self{-FileName}";
-    }
-  } 
+    $Max_Questions=$Total_Questions;
+  }elsif($Max_Questions > $Total_Questions){
+    croak"Number of questions exceeds the amount in $FileName";
+  }
+  
   my %Randoms=();
   my @Randoms=();
   my %Test_Questions=();
@@ -109,9 +107,11 @@ sub test{
   my $Lengths=shift;
   my $Randoms=shift;
   my $Max=shift;
+
   if(!defined $Max){
-    $Max=$$self{-FileLength};
+    $Max=&_get_FileLength($self);
   }
+
   my($length,$answer,$key,$X);
   my $question_number=1;
   my $question_answer;
@@ -173,6 +173,40 @@ sub _Final{
   return;
 }
 
+sub _set_FileLength{
+  my $self=shift;
+  my $count=shift;
+  $$self{_FileLength}=$count;
+}
+
+sub _get_FileLength{
+  my $self=shift;
+  return $$self{_FileLength};
+}
+
+sub _get_FileName{
+  my $self=shift;
+  return $$self{_FileName};
+}
+
+sub _get_Delimiter{
+  my $self=shift;
+  return $$self{_Delimiter};
+}
+#####################
+## Debug Functions ##
+#####################
+sub _Print_Object{
+  my $self=shift;
+  require Data::Dumper;
+  print Data::Dumper->Dumper($self); 
+}
+
+sub _Get_VERSION{
+  my $self=shift;
+  return $VERSION;
+}
+ 
 1;
 __END__
 
@@ -185,7 +219,7 @@ Games::QuizTaker - Create and take your own quizzes and tests
 =head1 SYNOPSIS
 
      use Quiz::Taker;
-     my $Q=Quiz::Taker->new({-FileName=>"sampleqa"});
+     my $Q=Quiz::Taker->new(FileName=>"sampleqa");
      my %Data=();
      my $rData=$Q->load(\%Data);
      my ($rQuestions,$rAnswers,$rLengths,$rRandoms)=$Q->generate(\%Data);
@@ -197,37 +231,39 @@ Games::QuizTaker - Create and take your own quizzes and tests
 
 =item new
 
-C<< new({-FileName=>"FILENAME",-Delimitor=>"Delimitor"}); >>
+C<< new("FileName"=>"FILENAME","Delimiter"=>"Delimiter"); >>
 
 This creates the Games::QuizTaker object and initializes it with two
-parameters. The -FileName parameter is required, and the -Delimitor is
-optional. The -Delimitor is what is used to separate the question and
-answers in the question file. If the -Delimitor parameter isn't passed,
+parameters. The FileName parameter is required, and the Delimiter is
+optional. The Delimiter is what is used to separate the question and
+answers in the question file. If the Delimiter parameter isn't passed,
 it will default to the pipe ("|") character.
 
 =item load
 
 C<< $refHash=$QT->load(\%Data); >>
 
-This function will load the hash with all of the questions and answers from the file
-that you specify when you create the object. It also sets another parameter
-within the $QT object called -FileLength, which is the total number of questions
-within the file.
+This function will load the hash with all of the questions and answers
+from the file that you specify when you create the object. It also sets
+another parameter within the $QT object called FileLength, which is the
+total number of questions within the file.
 
 =item generate
 
 C<< ($refHash1,$refHash2,$refHash3,$refArray1)=$QT->generate(\%Data,$Max); >> 
 
-This function will generate the 3 hashes and 1 array needed by the test function.
-The first reference ($refHash1) are the questions that will be asked by the test
-function. The second reference ($refHash2) are the answers to those questions.
-The third reference ($refHash3) is the length of the array that is the value for
-each key of $refHash1. And $refArray1 is a sequence of random numbers that is 
-generated from the total number of questions ($Max) that you wish to answer. The
-$refArray1 is also randomized further after its generation by the _shuffle function
-which is a Fisher-Yates shuffle. If the maximum number of questions you wish to answer
-on the quiz ($Max) is not passed to the function, it will default to the maximum number
-of questions in the file (determined by the -FileLength parameter within the object).
+This function will generate the 3 hashes and 1 array needed by the test
+function. The first reference ($refHash1) are the questions that will be
+asked by the test function. The second reference ($refHash2) are the answers
+to those questions. The third reference ($refHash3) is the length of the
+array that is the value for each key of $refHash1. And $refArray1 is a
+sequence of random numbers that is generated from the total number of
+questions ($Max) that you wish to answer. The $refArray1 is also randomized
+further after its generation by the internal _shuffle function which is a
+Fisher-Yates shuffle. If the maximum number of questions you wish to answer
+on the quiz ($Max) is not passed to the function, it will default to the
+maximum number of questions in the file (determined by the FileLength
+parameter within the object.
 
 =item test
 
@@ -238,9 +274,9 @@ for a response. It will then match that response against the Answers hash.
 If there is a match, it will keep track of the number of correct answers, and 
 move on to the next question, other wise it will give the correct answer, and
 go to the next question. After the last question, it will pass the number
-correct and the max number of questions on the test to the _Final function, which
-prints out your final score. The $Max variable is optional to be passed and will
-default to the total number of questions in the original question file.
+correct and the max number of questions on the test to the _Final function,
+which prints out your final score. The $Max variable is optional to be
+passed and will default to the total number of questions in the question file.
 
 =back
 
@@ -248,16 +284,25 @@ default to the total number of questions in the original question file.
 
 None by default
 
+=head1 DEBUGGING
+
+There is a single function available for debugging. When called, it will
+print out the contents of the object and its parameters.
+ 
 =head1 ACKNOWLEDGEMENTS
 
 Special thanks to everyone at http://perlmonks.org for their suggestions
-and contributions to this module.
+and contributions to this module, and to Damian Conway for his excellent
+book on Object Oriented Perl
 
 =head1 AUTHOR
 
 Thomas Stanley
 
 Thomas_J_Stanley@msn.com
+
+I can also be found at http://perlmonks.org as TStanley. You can direct
+any questions relating to this module there.
 
 =head1 COPYRIGHT
 
