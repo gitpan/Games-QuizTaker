@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.22;
+$VERSION=1.24;
 
 sub AUTOLOAD{
   my ($self)=@_;
@@ -31,8 +31,7 @@ sub new{
 }
   
 sub load{
-  my $self=shift;
-  my $Data=shift;
+  my ($self,$Data)=@_;
   my $Question_File=$self->get_FileName;
   my $Separator=$self->get_Delimiter;
   my $Answer_Sep=$self->get_Answer_Delimiter;
@@ -47,12 +46,9 @@ sub load{
   while(<FH>){
     my @sorter;
     if(/^$/ or /^#/){}else{
-      $count++; 
-      if($Separator eq "|"){ 
-        @sorter=split /\|/;
-      }else{
-        @sorter=split /$Separator/;
-      }
+      $count++;
+      my $sep=qq"\\$Separator"; 
+      @sorter=split /$sep/;
       $question_number=shift @sorter;
       my $ref=\@sorter;
       $$Data{$question_number}=$ref;    
@@ -102,15 +98,13 @@ sub generate{
 }
 
 sub test{
-  my $self=shift;
-  my $Questions=shift;
-  my $Answers=shift;
-  my $Randoms=shift;
+  my ($self,$Questions,$Answers,$Randoms)=@_;
   my $Answer_Sep=$self->get_Answer_Delimiter;
   my $Max=$self->get_Max_Questions;
   my ($answer,$key,$line,$question_answer);
   my $question_number=1;
   my $number_correct=0;
+  my $asep=qq"\\$Answer_Sep";
 
   system(($^O eq "MSWin32"?'cls':'clear'));
   print"\n";
@@ -138,9 +132,8 @@ sub test{
       if($question_answer!~/$Answer_Sep/){
         warn"Answer_Delimiter doesn't match internally";
       }
-      if($Answer_Sep eq " "){
-      }else{
-        $question_answer=~s/$Answer_Sep/ /;
+      if($Answer_Sep eq " "){ }else{
+        $question_answer=~s/$asep/ /;
       }
     }
 
@@ -165,8 +158,7 @@ sub test{
 
 sub shuffle{
   ## Fisher-Yates shuffle ##
-  my $self=shift;
-  my $array=shift;
+  my ($self,$array)=@_;
   my $x;
   for($x=@$array;--$x;){
     my $y=int rand ($x+1);
@@ -236,8 +228,7 @@ sub get_Score{
 ## Debug Functions ##
 #####################
 sub Print_Object{
-  my $self=shift;
-  my $structure=shift;
+  my ($self,$structure)=@_;
   require Data::Dumper;
 
   if(defined $structure){
@@ -370,5 +361,4 @@ Perl itself.
 I<perl(1)>
 
 =cut
-
 
