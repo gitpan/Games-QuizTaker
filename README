@@ -1,0 +1,15 @@
+To install
+==========
+
+perl Makefile.PL
+make
+make test
+make install
+
+Module Dependencies
+===================
+Text::Wrap
+Test::More
+Data::Dumper
+Fcntl
+

@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.25;
+$VERSION=1.26;
 
 sub AUTOLOAD{
   my ($self)=@_;
@@ -21,13 +21,17 @@ sub DESTROY{
 
 sub new{
   my($class,%arg)=@_;
-    bless{ _Delimiter        => $arg{Delimiter}|| "|",
+  bless my $self={ _Delimiter        => $arg{Delimiter}|| "|",
 	   _Answer_Delimiter => $arg{Answer_Delimiter}|| " ", 
            _Score            => $arg{Score}|| undef,
            _FileLength       => "0",
            _FileName         => $arg{FileName}||croak"No FileName given",
 	   _Max_Questions    => "0",
          },$class;
+  if($$self{_Delimiter} eq $$self{_Answer_Delimiter}){
+    croak"The Delimiter and Answer_Delimiter are the same";
+  }
+  return $self;
 }
   
 sub load{
@@ -277,10 +281,12 @@ it will default to the pipe ("|") character. The Answer_Delimiter is
 used for questions that have more than one correct answer. If the
 Answer_Delimiter parameter isn't passed, it will default to a space.
 When answering the questions within the test that have more than one
-answer, put a space between each answer. There is also a parameter called
-Score that also can be passed to the object. If set, this parameter will
-print out a final score, giving the number of questions answered correctly,
-and the overall percentage. By default, this is turned off. 
+answer, put a space between each answer. There is a check that ensures
+that the Delimiter and Answer_Delimiter are not the same. If they are,
+the module will croak. There is also a parameter called Score that can
+also be passed to the object. If set, this parameter will print out a 
+final score, giving the number of questions answered correctly, and the
+overall percentage. By default, this is turned off. 
 
 =item load
 
@@ -289,9 +295,7 @@ C<< $refHash=$QT->load(\%Data); >>
 This function will load the hash with all of the questions and answers
 from the file that you specify when you create the object. It also sets
 another parameter within the $QT object called FileLength, which is the
-total number of questions within the file. It will also check to see if
-the _Answer_Delimiter parameter is the same as the _Delimiter parameter.
-If they are the same, then the program will croak.
+total number of questions within the file.
 
 =item generate
 
@@ -330,9 +334,8 @@ None by default
 
 =head1 DEBUGGING
 
-There is a single function available for debugging. When called, it will
-print out the contents of the object and its parameters.
- 
+There is a function called Print_Object that can be called to view the contents of the object itself.
+
 =head1 ACKNOWLEDGEMENTS
 
 Special thanks to everyone at http://perlmonks.org for their suggestions
@@ -352,10 +355,22 @@ any questions relating to this module there.
 
 =head1 COPYRIGHT
 
-Copyright (C)2001-2003 Thomas Stanley. All rights reserved. This program is free
+=begin text
+
+Copyright (C)2001-2004 Thomas Stanley. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms as
 Perl itself.
- 
+
+=end text
+
+=begin html
+
+Copyright E<copy>2001-2004 Thomas Stanley. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same terms
+as Perl itself.
+
+=end html
+
 =head1 SEE ALSO
 
 I<perl(1)>

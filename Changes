@@ -105,3 +105,13 @@ Revision history for Perl extension Games::QuizTaker.
 1.25  Wed Oct 29 12:29:04 2003
 	- Re-implemented the tests using the Test::More module
 
+1.26  Fri Jan  2 11:20:10 2004
+	- Changed the new and load functions. The "new" function now
+	  checks to see if the question delimiter and the answer delimiter
+	  are the same, and croaks if they are.
+
+	- Added a new test for the above change, plus some additonal tests
+	  to check that all subroutine error functions are working properly
+
+	- Fixed a formatting problem within the pod
+
