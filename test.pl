@@ -41,15 +41,15 @@ if($$Q2{_Delimiter} eq ","){
 my %hash=();
 my $refhash=$Q1->load(\%hash);
 my $Num=keys %hash;
-if($Num == 10){
+if($Num == 9){
   print"Load function .......... ok 5\n";
 }else{
   print"Load function .......... not ok 5\n";
 }
 
-my($ref1,$ref2,$ref3,$ref4)=$Q1->generate(\%hash);
+my($ref1,$ref2,$ref3)=$Q1->generate(\%hash);
 my $num=keys %{$ref1};
-if($num == 10){
+if($num == 9){
   print"Generate function ...... ok 6\n";
 }else{
   print"Generate function ...... not ok 6\n";

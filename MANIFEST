@@ -1,9 +1,7 @@
 Changes
 MANIFEST
-README
 Makefile.PL
 QuizTaker.pm
 test.pl
 sampleqa
 sample.csv
-QuizTaker.html

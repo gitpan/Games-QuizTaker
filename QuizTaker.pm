@@ -5,7 +5,7 @@ use Fcntl qw/:flock/;
 use Text::Wrap;
 use Carp;
 
-$VERSION=1.10;
+$VERSION=1.12;
 
 sub AUTOLOAD{
   my ($self)=@_;
@@ -36,10 +36,7 @@ sub load{
   my $Separator=_get_Delimiter($self);
   my $Answer_Sep=_get_Answer_Delimiter($self);
   my $Data=shift;
-  my $question_number;
-  my $length;
-  my $count;
-  my $C;
+  my ($question_number,$count,$ref);
   my @sorter=();
 
   if($Answer_Sep eq $Separator){
@@ -57,10 +54,8 @@ sub load{
         @sorter=split /$Separator/;
       }
       $question_number=shift @sorter;
-      $length=@sorter;
-      for($C=0;$C<$length;$C++){
-        $$Data{$question_number}[$C]=$sorter[$C];
-      }
+      $ref=\@sorter;
+      $$Data{$question_number}=$ref;    
     }
   }
   flock(FH,LOCK_UN);
@@ -86,27 +81,11 @@ sub generate{
 
   &_set_Max_Questions($self,$Max_Questions);
 
-#
-# Original Code
-# 
-# if(!defined $Max_Questions){
-#    $Max_Questions=$Total_Questions;
-#    &_set_Max_Questions($self,$Max_Questions);
-#  }elsif($Max_Questions > $Total_Questions){
-#    croak"Number of questions exceeds the amount in $FileName";
-#  }elsif($Max_Questions < 1){
-#    croak"Must have at least one question in the test";
-#  }else{
-#    &_set_Max_Questions($self,$Max_Questions);
-#  }
-  
   my %Randoms=();
   my @Randoms=();
   my %Test_Questions=();
   my %Test_Answers=(); 
-  my %Question_Lengths=();
-  my $E;
-
+  
   for(1..$Max_Questions){
     my $question_number=int(rand($Total_Questions)+1);
     redo if exists $Randoms{$question_number};
@@ -121,22 +100,17 @@ sub generate{
     $Test_Questions{$Randoms[$D]} = $$Data{$Randoms[$D]};
   }
   
-  foreach my $key(keys %Test_Questions){
-    $E=@{$Test_Questions{$key}};
-    $Question_Lengths{$key}=$E;
-  }
-  return \%Test_Questions,\%Test_Answers,\%Question_Lengths,\@Randoms; 
+  return \%Test_Questions,\%Test_Answers,\@Randoms; 
 }
 
 sub test{
   my $self=shift;
   my $Questions=shift;
   my $Answers=shift;
-  my $Lengths=shift;
   my $Randoms=shift;
   my $Answer_Sep=_get_Answer_Delimiter($self);
   my $Max=_get_Max_Questions($self);
-  my ($length,$answer,$key,$X);
+  my ($answer,$key,$line);
   my $question_number=1;
   my $question_answer;
   my $number_correct=0;
@@ -146,12 +120,11 @@ sub test{
 
   while($question_number<=$Max){
     $key=shift @$Randoms;
-    $length=$$Lengths{$key};
-
+  
     print"Question Number $question_number\n";
 
-    for($X=0;$X<$length;$X++){
-      print wrap("","","$$Questions{$key}[$X]\n");
+    foreach $line(@{$$Questions{$key}}){
+      print wrap("","","$line\n");
     }
 
     print"Your Answer: ";
@@ -177,12 +150,12 @@ sub test{
 
     if($answer eq $question_answer){
       print"That is correct!!\n\n";
-      $question_number+=1;
-      $number_correct+=1;
+      $question_number++;
+      $number_correct++;
     }else{
       print"That is incorrect!!\n";
       print"The correct answer is $question_answer.\n\n";
-      $question_number+=1;
+      $question_number++;
     }
   }
   my $Final=_get_Score($self);
@@ -298,8 +271,8 @@ Games::QuizTaker - Create and take your own quizzes and tests
      my $Q=Games::QuizTaker->new(FileName=>"sampleqa");
      my %Data=();
      my $rData=$Q->load(\%Data);
-     my ($rQuestions,$rAnswers,$rLengths,$rRandoms)=$Q->generate(\%Data);
-     $Q->test($rQuestions,$rAnswers,$rLengths,$rRandoms);
+     my ($rQuestions,$rAnswers,$rRandoms)=$Q->generate(\%Data);
+     $Q->test($rQuestions,$rAnswers,$rRandoms);
 
 =head1 DESCRIPTION
 
@@ -336,26 +309,24 @@ If they are the same, then the program will croak.
 
 =item generate
 
-C<< ($refHash1,$refHash2,$refHash3,$refArray1)=$QT->generate(\%Data,$Max); >> 
+C<< ($refHash1,$refHash2,$refArray1)=$QT->generate(\%Data,$Max); >> 
 
-This function will generate the 3 hashes and 1 array needed by the test
+This function will generate the 2 hashes and 1 array needed by the test
 function. The first reference ($refHash1) are the questions that will be
 asked by the test function. The second reference ($refHash2) are the answers
-to those questions. The third reference ($refHash3) is the length of the
-array that is the value for each key of $refHash1. And $refArray1 is a
-sequence of random numbers that is generated from the total number of
-questions ($Max) that you wish to answer. The $refArray1 is also randomized
-further after its generation by the internal _shuffle function which is a
-Fisher-Yates shuffle. If the maximum number of questions you wish to answer
-on the quiz ($Max) is not passed to the function, it will default to the
-maximum number of questions in the file (determined by the FileLength
-parameter within the object. It will also set the Max_Questions parameter
-within the object, which will be later used by the test function to keep
-track of the number of questions printed out.
+to those questions. And $refArray1 is a sequence of random numbers that is
+generated from the total number of questions ($Max) that you wish to answer.
+The $refArray1 is also randomized further after its generation by the
+internal _shuffle function which is a Fisher-Yates shuffle. If the maximum
+number of questions you wish to answer on the quiz ($Max) is not passed to
+the function, it will default to the maximum number of questions in the file
+(determined by the FileLength parameter within the object). It will also set
+the Max_Questions parameter within the object, which will be later used by
+the test function to keep track of the number of questions printed out.
 
 =item test
 
-C<< $QT->test($refHash1,$refHash2,$refHash3,$refArray1); >>
+C<< $QT->test($refHash1,$refHash2,$refArray1); >>
 
 This function will print out each question in the Questions hash, and wait
 for a response. It will then match that response against the Answers hash.
@@ -382,8 +353,8 @@ Special thanks to everyone at http://perlmonks.org for their suggestions
 and contributions to this module, and to Damian Conway for his excellent
 book on Object Oriented Perl
 
-Also, I would like to thank Chris Ahrends for his suggestions to improve this module, and to Mike Castle for pointing out a typo in my POD.
-
+Also, I would like to thank Chris Ahrends for his suggestions to improve
+this module, and to Mike Castle for pointing out a typo in my POD
 
 =head1 AUTHOR
 
