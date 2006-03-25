@@ -9,3 +9,4 @@ t/02generate.t
 t/03exceptions.t
 t/04pod.t
 README
+META.yml

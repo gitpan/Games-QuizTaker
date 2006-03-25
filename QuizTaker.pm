@@ -1,252 +1,216 @@
 package Games::QuizTaker;
-use strict;
-use vars qw($AUTOLOAD $VERSION);
-use Fcntl qw/:flock/;
-use Text::Wrap;
-use Carp;
-
-$VERSION=1.27;
-
-sub AUTOLOAD{
-  my ($self)=@_;
-  $AUTOLOAD=~/.*::[sg]et(_\w+)/ or croak "No such method: $AUTOLOAD";
-  exists $self->{$1} or croak "No such attribute: $1";
-  return $self->{$1};
-}
-
-sub DESTROY{
-  my $self=shift;
-  undef $self;
-}
-
-sub new{
-  my($class,%arg)=@_;
-  bless my $self={ _Delimiter        => $arg{Delimiter}|| "|",
-	   _Answer_Delimiter => $arg{Answer_Delimiter}|| " ", 
-           _Score            => $arg{Score}|| undef,
-           _FileLength       => "0",
-           _FileName         => $arg{FileName}||croak"No FileName given",
-	   _Max_Questions    => "0",
-         },$class;
-  if($$self{_Delimiter} eq $$self{_Answer_Delimiter}){
-    croak"The Delimiter and Answer_Delimiter are the same";
-  }
-  return $self;
-}
+{
+  use strict;
+  use Text::Wrap;
+  use Fcntl qw/:flock/;
+  use Carp;
+  use Data::Dumper;
+  use Object::InsideOut;
+  use vars qw($VERSION);
   
-sub load{
-  my ($self,$Data)=@_;
-  my $Question_File=$self->get_FileName;
-  my $Separator=$self->get_Delimiter;
-  my $Answer_Sep=$self->get_Answer_Delimiter;
-  my ($question_number,$count);
-
-  if($Answer_Sep eq $Separator){
-    croak"The Delimiter and Answer_Delimiter are the same";
-  }
-
-  open(FH,"$Question_File")||croak"Can't open $Question_File: $!";
-  flock(FH,LOCK_SH);
-  while(<FH>){
-    my @sorter;
-    if(/^$/ or /^#/){}else{
-      $count++;
-      my $sep=qq"\\$Separator"; 
-      @sorter=split /$sep/;
-      $question_number=shift @sorter;
-      my $ref=\@sorter;
-      $$Data{$question_number}=$ref;    
-    }
-  }
-  flock(FH,LOCK_UN);
-  close FH;
-  $self->set_FileLength($count);
-  return $Data;   
-}
-
-sub generate{
-  my ($self,$Data,$Max_Questions)=@_;
-  my $Total_Questions=$self->get_FileLength;
-  my $FileName=$self->get_FileName;
-  
-  $Max_Questions = $Total_Questions unless defined $Max_Questions;
-
-  croak"Number of questions in $FileName exceeded"
-    if $Max_Questions > $Total_Questions;
-
-  croak"Must have at least one question in test"
-    if $Max_Questions < 1;
-
-  $self->set_Max_Questions($Max_Questions);
-
+  $VERSION='2.0';
+  my $questions={};
   my %Randoms=();
   my @Randoms=();
   my %Test_Questions=();
-  my %Test_Answers=(); 
-  
-  for(1..$Max_Questions){
-    my $question_number=int(rand($Total_Questions)+1);
-    redo if exists $Randoms{$question_number};
-    $Randoms{$question_number}=1;
-  }
-
-  @Randoms=keys %Randoms;
-  $self->shuffle(\@Randoms);
-
-  for(my $D=0;$D<$Max_Questions;$D++){
-    $Test_Answers{$Randoms[$D]}=pop @{$$Data{$Randoms[$D]}};
-    $Test_Questions{$Randoms[$D]} = $$Data{$Randoms[$D]};
-  }
-  
-   return \%Test_Questions,\%Test_Answers,\@Randoms; 
-}
-
-sub test{
-  my ($self,$Questions,$Answers,$Randoms)=@_;
-  my $Answer_Sep=$self->get_Answer_Delimiter;
-  my $Max=$self->get_Max_Questions;
-  my ($answer,$key,$line,$question_answer);
-  my $question_number=1;
-  my $number_correct=0;
-  my $asep=qq"\\$Answer_Sep";
-
-  system(($^O eq "MSWin32"?'cls':'clear'));
-  print"\n";
-
-  while($question_number<=$Max){
-    $key=shift @$Randoms;
-  
-    print"Question Number $question_number\n";
-
-    foreach $line(@{$$Questions{$key}}){
-      print wrap("","","$line\n");
-    }
-
-    print"Your Answer: ";
-    $answer=<STDIN>;
-    chomp($answer);
-    $answer=uc $answer;
-    $question_answer=$$Answers{$key};
-    chomp($question_answer);
-    $question_answer=uc $question_answer;
-
-    my $ln=length($question_answer);
-
-    if($ln>1){
-      if($question_answer!~/$Answer_Sep/){
-        warn"Answer_Delimiter doesn't match internally";
-      }
-      if($Answer_Sep eq " "){ }else{
-        $question_answer=~s/$asep/ /;
-      }
-    }
-
-    if($answer eq $question_answer){
-      print"That is correct!!\n\n";
-      $question_number++;
-      $number_correct++;
-    }else{
-      print"That is incorrect!!\n";
-      print"The correct answer is $question_answer.\n\n";
-      $question_number++;
-    }
-  }
-  my $Final=$self->get_Score;
-  if(defined $Final){
-    $self->Final($number_correct,$Max);
-    return;
-  }else{
-    return;
-  }
-}
-
-sub shuffle{
-  ## Fisher-Yates shuffle ##
-  my ($self,$array)=@_;
-  my $x;
-  for($x=@$array;--$x;){
-    my $y=int rand ($x+1);
-    next if $x == $y;
-    @$array[$x,$y]=@$array[$y,$x];
-  }
-}
-
-sub Final{
-  my ($self,$Correct,$Max)=@_;
-  
-  if($Correct >= 1){
-    my $Percentage=($Correct/$Max)*100;
-    print"You answered $Correct out of $Max correctly.\n";
-    printf"For a final score of %02d%%\n",$Percentage;
-    return;
-  }else{
-    print"You answered 0 out of $Max correctly.\n";
-    print"For a final score of 0%\n";
-    return;
-  }
-}
-
-sub set_FileLength{
-  my $self=shift;
-  my $count=shift;
-  $$self{_FileLength}=$count;
-}
-
-sub set_Max_Questions{
-  my $self=shift;
-  my $Questions=shift;
-  $$self{_Max_Questions}=$Questions;
-}
-
-sub get_FileLength{
-  my $self=shift;
-  return $$self{_FileLength};
-}
-
-sub get_Max_Questions{
-  my $self=shift;
-  return $$self{_Max_Questions};
-}
-
-sub get_FileName{
-  my $self=shift;
-  return $$self{_FileName};
-}
-
-sub get_Delimiter{
-  my $self=shift;
-  return $$self{_Delimiter};
-}
-
-sub get_Answer_Delimiter{
-  my $self=shift;
-  return $$self{_Answer_Delimiter};
-}
-
-sub get_Score{
-  my $self=shift;
-  return $$self{_Score};
-}
-
-#####################
-## Debug Functions ##
-#####################
-sub Print_Object{
-  my ($self,$structure)=@_;
-  require Data::Dumper;
-
-  if(defined $structure){
-    print Data::Dumper->Dumper($structure);
-  }else{
-    print Data::Dumper->Dumper($self); 
-  }
-}
-
-sub get_VERSION{
-  my $self=shift;
-  return $VERSION;
-}
+  my %Test_Answers=();
  
+  my @FileName :Field('Standard'=>'FileName','Type'=>'LIST');
+  my @AnswerDelimiter :Field('Standard'=>'AnswerDelimiter','Type'=>'LIST');
+  my @FileLength :Field('Standard'=>'FileLength','Type'=>'NUMERIC');
+  my @Delimiter :Field('Standard'=>'Delimiter','Type'=>'LIST');
+  my @MaxQuestions :Field('Standard'=>'MaxQuestions','Type'=>'NUMERIC');
+  my @Score :Field('Standard'=>'Score','Type'=>'NUMERIC');
+  
+  my %init_args :InitArgs=(
+      'FileName'=>{                     # Name of file with questions
+        'Regex' => qr/^FileName$/i,
+        'Mandatory' => 1,
+      },
+      'AnswerDelimiter'=>{              # This is the delimiter that separates multiple answers
+        'Regex'=>qr/AnswerDelimiter/i,  # It is a space by default
+        'Default'=>" ",
+      },
+      'FileLength'=>{                   # This is the number of questions in the file
+        'Regex'=>qr/FileLength/,        # It is set when the question file is loaded
+        'Default'=>0
+      },
+      'Delimiter'=>{                    # This is the delimiter that separates the questions and choices.
+        'Regex'=>qr/Delimiter/i,        # It is the pipe | character by default
+        'Default'=>"|"
+      },
+      'MaxQuestions'=>{                 # This is the maximum number of questions that can be asked for the test
+        'Regex'=>qr/MaxQuestions/,      
+        'Default'=>undef
+      },
+      'Score'=>{                        # This controls whether or not you want an overall score printed out
+        'Regex'=>qr/Score/i,
+        'Default'=>undef
+      },
+  );
+  
+  sub _init :Init{
+    my ($self,$args)=@_;
+    if(exists($args->{'FileName'})){
+      $self->set(\@FileName,$args->{'FileName'});
+    }
+    if(exists($args->{'AnswerDelimiter'})){
+      $self->set(\@AnswerDelimiter,$args->{'AnswerDelimiter'});
+    }
+    if(exists($args->{'Delimiter'})){
+      $self->set(\@Delimiter,$args->{'Delimiter'});
+    }
+    if(exists($args->{'Score'})){
+      $self->set(\@Score,$args->{'Score'});
+    }
+    if(exists($args->{'MaxQuestions'})){
+      $self->set(\@MaxQuestions,$args->{'MaxQuestions'});
+    }
+    if(exists($args->{'FileLength'})){
+      $self->set(\@FileLength,$args->{'FileLength'});
+    }
+    my $ad=$self->get_AnswerDelimiter;
+    my $dl=$self->get_Delimiter;
+    if($ad eq $dl){ croak"The Delimiter and Answer Delimiter are the same!"; }
+  }
+  
+  sub load{
+    my $self=shift;
+    my $delimiter=$self->get_Delimiter;
+    my $file=$self->get_FileName;
+    my ($question_number,$count);
+    
+    open(FH,"$file")||croak"Can't open $file: $!";
+    flock(FH,LOCK_SH);
+    while(<FH>){
+      my @sorter;
+      if(/^$/ or /^#/){}else{
+        $count++;
+        my $sep=qq"\\$delimiter"; 
+        @sorter=split /$sep/;
+        $question_number=shift @sorter;
+        my $ref=\@sorter;
+        $$questions{$question_number}=$ref;    
+      }
+    }
+    flock(FH,LOCK_UN);
+    close FH;
+    $self->set_FileLength($count);
+  }
+  
+  sub generate{
+    my $self=shift;
+    my $Total_Questions=$self->get_FileLength;
+    
+    if(!defined $self->get_MaxQuestions){
+      $self->set_MaxQuestions($Total_Questions);
+    }
+    
+    my $Max_Questions=$self->get_MaxQuestions;
+    
+    for(1..$Max_Questions){
+      my $question_number=int(rand($Total_Questions)+1);
+      redo if exists $Randoms{$question_number};
+      $Randoms{$question_number}=1;
+    }
+
+    @Randoms=keys %Randoms;
+    $self->shuffle(\@Randoms);
+    
+    for(my $D=0;$D<$Max_Questions;$D++){
+      $Test_Answers{$Randoms[$D]}=pop @{$$questions{$Randoms[$D]}};
+      $Test_Questions{$Randoms[$D]} = $$questions{$Randoms[$D]};
+    }
+  }
+  
+  sub test{
+    my $self=shift;
+    my $Answer_Sep=$self->get_AnswerDelimiter;
+    my $Max=$self->get_MaxQuestions;
+    my ($answer,$key,$line,$question_answer);
+    my $question_number=1;
+    my $number_correct=0;
+    my $asep=qq"\\$Answer_Sep";
+
+    system(($^O eq "MSWin32"?'cls':'clear'));
+    print"\n";
+
+    while($question_number<=$Max){
+      $key=shift @Randoms;
+  
+      print"Question Number $question_number\n";
+
+      foreach $line(@{$$questions{$key}}){
+        print wrap("","","$line\n");
+      }
+
+      print"Your Answer: ";
+      $answer=<STDIN>;
+      chomp($answer);
+      $answer=uc($answer);
+      $question_answer=$Test_Answers{$key};
+      chomp($question_answer);
+      $question_answer=uc $question_answer;
+
+      my $ln=length($question_answer);
+
+      if($ln>1){
+        if($question_answer!~/$Answer_Sep/){
+          warn"Answer_Delimiter doesn't match internally";
+        }
+        if($Answer_Sep eq " "){ }else{
+          $question_answer=~s/$asep/ /;
+        }
+      }
+      print "My Answer: $answer\n";
+      print "Test Answer: $question_answer\n";
+      if("$answer" eq "$question_answer"){
+        print"That is correct!!\n\n";
+        $question_number++;
+        $number_correct++;
+      }else{
+        print"That is incorrect!!\n";
+        print"The correct answer is $question_answer.\n\n";
+        $question_number++;
+      }
+    }
+    my $Final=$self->get_Score;
+    if(defined $Final){
+      $self->Final($number_correct,$Max);
+      return;
+    }else{
+      return;
+    }
+  }
+  sub Final{
+    my ($self,$Correct,$Max)=@_;
+  
+    if($Correct >= 1){
+      my $Percentage=($Correct/$Max)*100;
+      print"You answered $Correct out of $Max correctly.\n";
+      printf"For a final score of %02d%%\n",$Percentage;
+      return;
+    }else{
+      print"You answered 0 out of $Max correctly.\n";
+      print"For a final score of 0%\n";
+      return;
+    }
+  } 
+  sub shuffle{
+  ## Fisher-Yates shuffle ##
+    my ($self,$array)=@_;
+    my $x;
+    for($x=@$array;--$x;){
+      my $y=int rand ($x+1);
+      next if $x == $y;
+      @$array[$x,$y]=@$array[$y,$x];
+    }
+  }
+  sub DESTROY{
+    my $self=shift;
+    unlink $self;
+  }
+}
 1;
 __END__
 
@@ -254,16 +218,16 @@ __END__
 
 =head1 NAME
 
-Games::QuizTaker - Create and take your own quizzes and tests
+Games::QuizTaker - Take your own quizzes and tests
 
-=head1 SYNOPSIS
+=head1 SYNAPSIS
 
-     use Games::QuizTaker;
-     my $Q=Games::QuizTaker->new(FileName=>"sampleqa",Score=>1);
-     my %Data=();
-     my $rData=$Q->load(\%Data);
-     my ($rQuestions,$rAnswers,$rRandoms)=$Q->generate(\%Data);
-     $Q->test($rQuestions,$rAnswers,$rRandoms);
+  use Games::QuizTaker;
+  my $GQ=Games::QuizTaker->new(FileName=>'test.psv');
+  $GQ->load;
+  $GQ->set_MaxQuestions(2) # Set the number of questions you wish to answer on the test. This is optional.
+  $GQ->generate;
+  $GQ->test;
 
 =head1 DESCRIPTION
 
@@ -271,78 +235,67 @@ Games::QuizTaker - Create and take your own quizzes and tests
 
 =item new
 
-C<< new("FileName"=>"FILENAME","Delimiter"=>"Delimiter",Answer_Delimiter=>"Delimiter",Score=>"1"); >>
+ C<my $GQT=Games::QuizTaker->new(FileName=>"File",Delimiter=>",",AnswerDelimiter=>"|",Score=>1);>
 
-This creates the Games::QuizTaker object and initializes it with two
-parameters. The FileName parameter is required, and the Delimiter is
-optional. The Delimiter is what is used to separate the question and
-answers in the question file. If the Delimiter parameter isn't passed,
-it will default to the pipe ("|") character. The Answer_Delimiter is
-used for questions that have more than one correct answer. If the
-Answer_Delimiter parameter isn't passed, it will default to a space.
-When answering the questions within the test that have more than one
-answer, put a space between each answer. There is a check that ensures
-that the Delimiter and Answer_Delimiter are not the same. If they are,
-the module will croak. There is also a parameter called Score that can
-also be passed to the object. If set, this parameter will print out a 
-final score, giving the number of questions answered correctly, and the
-overall percentage. By default, this is turned off. 
+ This method creates the Games::QuizTaker object as an inside out object. The method can take up to four arguments, and one of them
+ (FileName) is mandatory. If the FileName argument is not passed, the method will croak. The Delimiter argument is the separator within the
+ file that separates the question number, the question, its answers, and the correct answer. The AnswerDelimiter is used to separate the answers
+ of questions that have multiple answers. The Score method takes a numeric argument. If set to 1, it will print out an overall score at the end
+ of the test. If left undefined(the default), it will not print the results. This is useful if setup in a login script to do a single question at
+ login.
+
+ The default for the Delimiter parameter is the pipe "|" chararcter, and the default for the AnswerDelimiter is a space. Also note that while the method names
+ are case-sensitive, the parameter names are not, so the parameters can be spelled in all lower case and the object will still put the parameters and 
+ their arguments exactly where they belong.
 
 =item load
 
-C<< $refHash=$QT->load(\%Data); >>
+ C<$GQT->load;>
 
-This function will load the hash with all of the questions and answers
-from the file that you specify when you create the object. It also sets
-another parameter within the $QT object called FileLength, which is the
-total number of questions within the file.
+ This method loads the question file into the object, and sets the internal FileLength parameter.
 
 =item generate
 
-C<< ($refHash1,$refHash2,$refArray1)=$QT->generate(\%Data,$Max); >> 
+ C<$GQT->generate;>
 
-This function will generate the 2 hashes and 1 array needed by the test
-function. The first reference ($refHash1) are the questions that will be
-asked by the test function. The second reference ($refHash2) are the answers
-to those questions. And $refArray1 is a sequence of random numbers that is
-generated from the total number of questions ($Max) that you wish to answer.
-The $refArray1 is also randomized further after its generation by the
-internal _shuffle function which is a Fisher-Yates shuffle. If the maximum
-number of questions you wish to answer on the quiz ($Max) is not passed to
-the function, it will default to the maximum number of questions in the file
-(determined by the FileLength parameter within the object). It will also set
-the Max_Questions parameter within the object, which will be later used by
-the test function to keep track of the number of questions printed out.
-
+ This method will load all of the questions and answers into the test hashes by default, unless the MaxQuestions internal parameter
+ has been set. This is checked for at the beginning of the method
+ 
 =item test
 
-C<< $QT->test($refHash1,$refHash2,$refArray1); >>
+ This method actually prints the questions out and waits for the answer input. It will check the user's input against the correct answer
+ and report back if they match or not.
+ 
+=item get/set methods
 
-This function will print out each question in the Questions hash, and wait
-for a response. It will then match that response against the Answers hash.
-If there is a match, it will keep track of the number of correct answers, and 
-move on to the next question, other wise it will give the correct answer, and
-go to the next question. After the last question, it will pass the number
-correct and the max number of questions on the test to the _Final function,
-which prints out your final score.
+ The purpose of these methods should be self-explanatory, so I won't go into them other than to provide a list of them:
+
+ get_FileName,set_FileName
+ get_AnswerDelimeter,set_AnswerDelimeter
+ get_Delimeter,set_Delimeter
+ get_Score,set_Score
+ get_FileLength,set_FileLength
+ get_MaxQuestions,set_MaxQuestions
 
 =back
 
 =head1 EXPORT
 
-None by default
+ None by default
 
 =head1 DEBUGGING
 
-There is a function called Print_Object that can be called to view the contents of the object itself.
+ None by default
+
+=head1 TODO LIST
+
+ On questions that have more than one correct answer, the answer must be entered in exactly the same as in the file, otherwise it
+ will be counted as an incorrect answer. This could possibly be fixed by a regular expression when checking the answers.
 
 =head1 ACKNOWLEDGEMENTS
 
-Special thanks to everyone at http://perlmonks.org for their suggestions
-and contributions to this module, and to Damian Conway for his excellent
-book on Object Oriented Perl
-
-Also, I would like to thank Chris Ahrends for his suggestions to improve this module, and to Mike Castle for pointing out a typo in my POD.
+Thanks to Jerry D. Heden for creating the Object::InsideOut module which I used to create this version of Games::QuizTaker.
+Thanks to Damian Conway for his book "Perl Best Practices" which gave me the initial idea to use an insideout object to implement the module
 
 =head1 AUTHOR
 
@@ -350,14 +303,14 @@ Thomas Stanley
 
 Thomas_J_Stanley@msn.com
 
-I can also be found at http://perlmonks.org as TStanley. You can direct
+I can also be found at http://www.perlmonks.org as TStanley. You can also direct
 any questions relating to this module there.
 
 =head1 COPYRIGHT
 
 =begin text
 
-Copyright (C)2001-2004 Thomas Stanley. All rights reserved. This program is free
+Copyright (C)2001-2006 Thomas Stanley. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms as
 Perl itself.
 
@@ -365,7 +318,7 @@ Perl itself.
 
 =begin html
 
-Copyright E<copy>2001-2004 Thomas Stanley. All rights reserved. This program is
+Copyright E<copy>2001-2006 Thomas Stanley. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 
@@ -374,6 +327,7 @@ as Perl itself.
 =head1 SEE ALSO
 
 I<perl(1)>
+I<Object::InsideOut>
 
 =cut
 

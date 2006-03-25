@@ -119,3 +119,7 @@ Revision history for Perl extension Games::QuizTaker.
 	- Reaccomplished the tests using Test::Harness and added a test for
 	  the POD using Test::Pod
 
+2.00  Tue Mar 21 00:06:10 2006
+	- New version of the module using the Object::Inside out module.
+	- Wrote/modified tests as needed
+

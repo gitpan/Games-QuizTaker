@@ -7,6 +7,7 @@ make install
 
 Module Dependencies
 ===================
+Object::InsideOut
 Text::Wrap
 Test::More
 Data::Dumper

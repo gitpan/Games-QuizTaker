@@ -1,12 +1,27 @@
-use Test::More tests => 5;
+use Test::More tests => 8;
 
-BEGIN{ use_ok('Games::QuizTaker','use Games::QuizTaker;'); }
+BEGIN{ use_ok('Games::QuizTaker'); }
 
-my $QT1=Games::QuizTaker->new(FileName=>"t/sampleqa",Score=>1);
+my $GQ1=Games::QuizTaker->new(FileName=>"t/sampleqa",Score=>1);
 
-ok(defined $QT1,'Object created');
-ok($QT1->isa('Games::QuizTaker'),'Its the correct type');
-is($$QT1{_FileName},"t/sampleqa",'FileName is set');
-is($$QT1{_Delimiter},"|",'Default Delimiter is set');
+ok(defined $GQ1,'Object created');
+
+ok($GQ1->isa('Games::QuizTaker'));
+
+my $file=$GQ1->get_FileName;
+ok($file eq "t/sampleqa");
+
+my $score=$GQ1->get_Score;
+ok($score == 1);
+
+my $delim=$GQ1->get_Delimiter;
+ok($delim eq "|");
+
+my $ans_delim=$GQ1->get_AnswerDelimiter;
+ok($ans_delim eq " ");
+
+$GQ1->load;
+my $count=$GQ1->get_FileLength;
+ok($count == 9);
 
 
