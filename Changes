@@ -123,3 +123,8 @@ Revision history for Perl extension Games::QuizTaker.
 	- New version of the module using the Object::Inside out module.
 	- Wrote/modified tests as needed
 
+2.01  Mon May 14 19:46:07 2007
+        - Added an answer_sort function that should now allow the user to enter
+	  multiple answers in any order and have them match
+	- Cosmetic changes to POD
+

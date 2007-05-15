@@ -3,7 +3,7 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     'NAME'		=> 'Games::QuizTaker',
-    'VERSION_FROM'	=> 'QuizTaker.pm', # finds $VERSION
+    'VERSION_FROM'	=> 'lib/Games/QuizTaker.pm', # finds $VERSION
     'PREREQ_PM'		=> {Carp=>0,
 			    Object::InsideOut=>0,
 			    Text::Wrap=>0,

@@ -8,7 +8,7 @@ package Games::QuizTaker;
   use Object::InsideOut;
   use vars qw($VERSION);
   
-  $VERSION='2.0';
+  $VERSION='2.01';
   my $questions={};
   my %Randoms=();
   my @Randoms=();
@@ -151,7 +151,6 @@ package Games::QuizTaker;
       $question_answer=$Test_Answers{$key};
       chomp($question_answer);
       $question_answer=uc $question_answer;
-
       my $ln=length($question_answer);
 
       if($ln>1){
@@ -161,10 +160,14 @@ package Games::QuizTaker;
         if($Answer_Sep eq " "){ }else{
           $question_answer=~s/$asep/ /;
         }
+        $question_answer=$self->answer_sort($question_answer);
+        $answer=$self->answer_sort($answer); 
       }
-      print "My Answer: $answer\n";
-      print "Test Answer: $question_answer\n";
-      if("$answer" eq "$question_answer"){
+
+    #  print "My Answer: $answer\n";
+    #  print "Test Answer: $question_answer\n";
+
+       if("$answer" eq "$question_answer"){
         print"That is correct!!\n\n";
         $question_number++;
         $number_correct++;
@@ -182,6 +185,15 @@ package Games::QuizTaker;
       return;
     }
   }
+
+  sub answer_sort{
+    my ($self,$answer)=@_;
+    my @array=split //,$answer;
+    my @sorted=sort @array;
+    $answer=join ' ',@sorted;
+    return $answer;
+  }
+
   sub Final{
     my ($self,$Correct,$Max)=@_;
   
@@ -235,7 +247,7 @@ Games::QuizTaker - Take your own quizzes and tests
 
 =item new
 
- C<my $GQT=Games::QuizTaker->new(FileName=>"File",Delimiter=>",",AnswerDelimiter=>"|",Score=>1);>
+ C< my $GQT=Games::QuizTaker->new(FileName=>"File",Delimiter=>",",AnswerDelimiter=>"|",Score=>1); >
 
  This method creates the Games::QuizTaker object as an inside out object. The method can take up to four arguments, and one of them
  (FileName) is mandatory. If the FileName argument is not passed, the method will croak. The Delimiter argument is the separator within the
@@ -250,13 +262,13 @@ Games::QuizTaker - Take your own quizzes and tests
 
 =item load
 
- C<$GQT->load;>
+ C< $GQT->load; >
 
  This method loads the question file into the object, and sets the internal FileLength parameter.
 
 =item generate
 
- C<$GQT->generate;>
+ C< $GQT->generate; >
 
  This method will load all of the questions and answers into the test hashes by default, unless the MaxQuestions internal parameter
  has been set. This is checked for at the beginning of the method
@@ -289,8 +301,7 @@ Games::QuizTaker - Take your own quizzes and tests
 
 =head1 TODO LIST
 
- On questions that have more than one correct answer, the answer must be entered in exactly the same as in the file, otherwise it
- will be counted as an incorrect answer. This could possibly be fixed by a regular expression when checking the answers.
+ None by default
 
 =head1 ACKNOWLEDGEMENTS
 

@@ -1,7 +1,7 @@
 Changes
 MANIFEST
 Makefile.PL
-QuizTaker.pm
+lib/Games/QuizTaker.pm
 t/sampleqa
 t/sample.csv
 t/01load.t
