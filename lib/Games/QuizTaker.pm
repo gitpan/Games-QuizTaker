@@ -8,7 +8,7 @@ package Games::QuizTaker;
   use Object::InsideOut;
   use vars qw($VERSION);
   
-  $VERSION='2.01';
+  $VERSION='2.011';
   my $questions={};
   my %Randoms=();
   my @Randoms=();
@@ -247,7 +247,7 @@ Games::QuizTaker - Take your own quizzes and tests
 
 =item new
 
- C< my $GQT=Games::QuizTaker->new(FileName=>"File",Delimiter=>",",AnswerDelimiter=>"|",Score=>1); >
+ C<< my $GQT=Games::QuizTaker->new(FileName=>"File",Delimiter=>",",AnswerDelimiter=>"|",Score=>1); >>
 
  This method creates the Games::QuizTaker object as an inside out object. The method can take up to four arguments, and one of them
  (FileName) is mandatory. If the FileName argument is not passed, the method will croak. The Delimiter argument is the separator within the
@@ -262,18 +262,20 @@ Games::QuizTaker - Take your own quizzes and tests
 
 =item load
 
- C< $GQT->load; >
+ C<< $GQT->load; >>
 
  This method loads the question file into the object, and sets the internal FileLength parameter.
 
 =item generate
 
- C< $GQT->generate; >
+ C<< $GQT->generate; >>
 
  This method will load all of the questions and answers into the test hashes by default, unless the MaxQuestions internal parameter
  has been set. This is checked for at the beginning of the method
  
 =item test
+
+C<< $GQT->test; >>
 
  This method actually prints the questions out and waits for the answer input. It will check the user's input against the correct answer
  and report back if they match or not.

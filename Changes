@@ -128,3 +128,6 @@ Revision history for Perl extension Games::QuizTaker.
 	  multiple answers in any order and have them match
 	- Cosmetic changes to POD
 
+2.011 Sat May 19 18:13:54 2007
+        - More cosmetic changes to POD
+
