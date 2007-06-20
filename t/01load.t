@@ -1,6 +1,8 @@
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 BEGIN{ use_ok('Games::QuizTaker'); }
+
+can_ok ('Games::QuizTaker','new');
 
 my $GQ1=Games::QuizTaker->new(FileName=>"t/sampleqa",Score=>1);
 

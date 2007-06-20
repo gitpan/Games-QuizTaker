@@ -131,3 +131,10 @@ Revision history for Perl extension Games::QuizTaker.
 2.011 Sat May 19 18:13:54 2007
         - More cosmetic changes to POD
 
+2.1   Tue Jun 19 19:13:24 2007
+        - Added a new test to cover the 'test' function
+	- Changed the 'test' function by adding a new inner module called
+	  Games::QuizTaker::IO, which has two functions called in and out,
+	  to allow for easier testing of the module.
+	- Added the global variable $TESTONLY that is only used by the tests
+

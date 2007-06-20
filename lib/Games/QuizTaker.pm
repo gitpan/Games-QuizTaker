@@ -6,15 +6,17 @@ package Games::QuizTaker;
   use Carp;
   use Data::Dumper;
   use Object::InsideOut;
-  use vars qw($VERSION);
-  
-  $VERSION='2.011';
+  use vars qw($TESTONLY $VERSION);
+  use Games::QuizTaker::IO;
+
+  $VERSION='2.1';
   my $questions={};
   my %Randoms=();
   my @Randoms=();
   my %Test_Questions=();
   my %Test_Answers=();
- 
+  my $t;
+
   my @FileName :Field('Standard'=>'FileName','Type'=>'LIST');
   my @AnswerDelimiter :Field('Standard'=>'AnswerDelimiter','Type'=>'LIST');
   my @FileLength :Field('Standard'=>'FileLength','Type'=>'NUMERIC');
@@ -121,7 +123,8 @@ package Games::QuizTaker;
       $Test_Answers{$Randoms[$D]}=pop @{$$questions{$Randoms[$D]}};
       $Test_Questions{$Randoms[$D]} = $$questions{$Randoms[$D]};
     }
-  }
+    $TESTONLY=$$questions{'1'}[0];
+}
   
   sub test{
     my $self=shift;
@@ -131,7 +134,6 @@ package Games::QuizTaker;
     my $question_number=1;
     my $number_correct=0;
     my $asep=qq"\\$Answer_Sep";
-
     system(($^O eq "MSWin32"?'cls':'clear'));
     print"\n";
 
@@ -139,13 +141,13 @@ package Games::QuizTaker;
       $key=shift @Randoms;
   
       print"Question Number $question_number\n";
-
+      $t=$$questions{$key}[0];      #Used for module testing
       foreach $line(@{$$questions{$key}}){
-        print wrap("","","$line\n");
+       Games::QuizTaker::IO::out(wrap("","","$line\n"));
       }
 
       print"Your Answer: ";
-      $answer=<STDIN>;
+      $answer=Games::QuizTaker::IO::in; 
       chomp($answer);
       $answer=uc($answer);
       $question_answer=$Test_Answers{$key};
@@ -163,9 +165,6 @@ package Games::QuizTaker;
         $question_answer=$self->answer_sort($question_answer);
         $answer=$self->answer_sort($answer); 
       }
-
-    #  print "My Answer: $answer\n";
-    #  print "Test Answer: $question_answer\n";
 
        if("$answer" eq "$question_answer"){
         print"That is correct!!\n\n";

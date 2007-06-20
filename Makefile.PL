@@ -11,5 +11,6 @@ WriteMakefile(
 			    Test::More => 0,
 			    Test::Harness => 0,
 			    Test::Pod => 0,
-                           }, # e.g., Module::Name => 1.1
+                            Sub::Override => 0,
+			   }, # e.g., Module::Name => 1.1
 );
